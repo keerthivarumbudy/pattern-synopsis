@@ -6,16 +6,16 @@ import java.util.List;
 
 public class Sketch {
     int resolution; // in seconds
-    List<List<SubSketch>> subSketchesList = new ArrayList<>();
+    List<List<SubSketch>> layerSketchList = new ArrayList<>();
 
     public Sketch(int resolution, List<Event> eventsList){
         this.resolution = resolution;
         SubSketch subSketch = new SubSketch();
         subSketch.startTimestamp = eventsList.get(0).timestamp;
-        subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution*1000);
+        subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution* 1000L);
         List<SubSketch> subSketches = new ArrayList<>();
-        this.subSketchesList.add(subSketches);
-        this.subSketchesList.get(0).add(subSketch);
+        this.layerSketchList.add(subSketches);
+        this.layerSketchList.get(0).add(subSketch);
         for (Event event : eventsList) {
             if((event.timestamp.getTime() > subSketch.endTimestamp.getTime())){
                 // create new subsketch
@@ -24,15 +24,45 @@ public class Sketch {
                 Timestamp tempEndTimestamp = subSketch.endTimestamp;
                 subSketch = new SubSketch();
                 subSketch.startTimestamp = tempEndTimestamp;
-                subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution*1000);
-                this.subSketchesList.get(0).add(subSketch);
+                subSketch.resolution = 1;
+                subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution* 1000L);
+                this.layerSketchList.get(0).add(subSketch);
 
             }
             // add event to subsketch
-            this.subSketchesList.get(0).get(this.subSketchesList.get(0).size()-1).eventCountMap.put(
-                    event.eventId, this.subSketchesList.get(0).get(this.subSketchesList.get(0).size()-1).
+            this.layerSketchList.get(0).get(this.layerSketchList.get(0).size()-1).eventCountMap.put(
+                    event.eventId, this.layerSketchList.get(0).get(this.layerSketchList.get(0).size()-1).
                             eventCountMap.getOrDefault(event.eventId, 0) + 1);
 
+        }
+    }
+
+    public void composeSketches(List<Integer> blockWindows){
+        // create layerSketch for each blockWindow, and group(concatenate) blockWindow number of the subsketches from the previous blockwindow
+        for(int i : blockWindows){
+            // get the index of the previous layerSketch
+            int prevBlockIdx = this.layerSketchList.size()-1;
+            this.layerSketchList.add(new ArrayList<>());
+            for(int j = 0; j< this.layerSketchList.get(prevBlockIdx).size(); j+=i){
+                SubSketch subSketch = new SubSketch();
+                subSketch.startTimestamp = this.layerSketchList.get(prevBlockIdx).get(j).startTimestamp;
+                if(j+i < this.layerSketchList.get(prevBlockIdx).size())
+                    subSketch.endTimestamp = this.layerSketchList.get(prevBlockIdx).get(j+i-1).endTimestamp;
+                else
+                    subSketch.endTimestamp = this.layerSketchList.get(prevBlockIdx).get(this.layerSketchList.get(prevBlockIdx).size()-1).endTimestamp;
+                subSketch.resolution = i;
+                try{
+                    for(int k=j; k<j+i; k++){
+                        for(String eventId : this.layerSketchList.get(prevBlockIdx).get(k).eventCountMap.keySet()){
+                            subSketch.eventCountMap.put(eventId, subSketch.eventCountMap.getOrDefault(eventId, 0) +
+                                    this.layerSketchList.get(prevBlockIdx).get(k).eventCountMap.get(eventId));
+                        }
+                    }
+                } catch (Exception e){
+
+                }
+                this.layerSketchList.get(prevBlockIdx+1).add(subSketch);
+            }
         }
     }
 

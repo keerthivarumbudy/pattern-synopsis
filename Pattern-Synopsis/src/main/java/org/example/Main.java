@@ -1,5 +1,6 @@
 package org.example;
 
+import javax.management.Query;
 import java.io.IOException;
 import java.util.List;
 
@@ -17,7 +18,8 @@ public class Main {
         if(eventsList.size() != 0){
             // create sketch
             Sketch sketch = new Sketch(600, eventsList);
-            System.out.println(sketch.subSketchesList.get(0).size());
+            // query answering
+            int count = QueryAnswering.countPattern(List.of("26014497", "26014497"), List.of(4800), sketch);
         }
     }
 }

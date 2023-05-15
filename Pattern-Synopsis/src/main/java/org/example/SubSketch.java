@@ -7,6 +7,7 @@ import java.util.Map;
 public class SubSketch {
     Timestamp startTimestamp;
     Timestamp endTimestamp;
+    Integer resolution; // not in seconds, but in multiples of the resolution of the sketch
     Map<String, Integer> eventCountMap;
 
     public SubSketch(){
