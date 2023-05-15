@@ -24,7 +24,8 @@ public class DataPreprocessing{
              Event event = new Event();
              event.eventId = array[eventIdx];
              event.timestamp = fixTimeFormat(array[timeIdx]);
-             System.out.println(event.eventId + " " + event.timestamp);
+             eventsList.add(event);
+//             System.out.println(event.eventId + " " + event.timestamp);
          }
          return eventsList;
     }

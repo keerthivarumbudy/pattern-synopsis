@@ -5,12 +5,19 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+        List<Event> eventsList = null;
     // read from csv and perform data preprocessing
         String filePath = "/Users/keerthivarumbudy/Downloads/archive (1)/2019-oct_10k.csv";
         try {
-            List<Event> eventsList = DataPreprocessing.readFromCsvAndReturnEventsList(filePath, 0, 2);
+            eventsList = DataPreprocessing.readFromCsvAndReturnEventsList(filePath, 0, 2 );
+
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        if(eventsList.size() != 0){
+            // create sketch
+            Sketch sketch = new Sketch(600, eventsList);
+            System.out.println(sketch.subSketchesList.get(0).size());
         }
     }
 }
