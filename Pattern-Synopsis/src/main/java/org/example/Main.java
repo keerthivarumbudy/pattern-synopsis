@@ -20,6 +20,8 @@ public class Main {
             Sketch sketch = new Sketch(600, eventsList);
             // query answering
             int count = QueryAnswering.countPattern(List.of("1004856", "1005115"), List.of(6000), sketch.layerSketchList.get(0), sketch.resolution);
+//            int count = QueryAnswering.countEvent(List.of("1005115"), List.of(6000), sketch.layerSketchList.get(0), sketch.resolution);
+
             System.out.println(count);
         }
     }
