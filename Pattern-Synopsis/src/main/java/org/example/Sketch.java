@@ -13,6 +13,7 @@ public class Sketch {
         SubSketch subSketch = new SubSketch();
         subSketch.startTimestamp = eventsList.get(0).timestamp;
         subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution* 1000L);
+        subSketch.resolution = 1;
         List<SubSketch> subSketches = new ArrayList<>();
         this.layerSketchList.add(subSketches);
         this.layerSketchList.get(0).add(subSketch);
@@ -39,8 +40,10 @@ public class Sketch {
 
     public void composeSketches(List<Integer> blockWindows){
         // create layerSketch for each blockWindow, and group(concatenate) blockWindow number of the subsketches from the previous blockwindow
+        int resolution_tracker = 1;
         for(int i : blockWindows){
             // get the index of the previous layerSketch
+            resolution_tracker*=i;
             int prevBlockIdx = this.layerSketchList.size()-1;
             this.layerSketchList.add(new ArrayList<>());
             for(int j = 0; j< this.layerSketchList.get(prevBlockIdx).size(); j+=i){
@@ -50,7 +53,7 @@ public class Sketch {
                     subSketch.endTimestamp = this.layerSketchList.get(prevBlockIdx).get(j+i-1).endTimestamp;
                 else
                     subSketch.endTimestamp = this.layerSketchList.get(prevBlockIdx).get(this.layerSketchList.get(prevBlockIdx).size()-1).endTimestamp;
-                subSketch.resolution = i;
+                subSketch.resolution = resolution_tracker;
                 try{
                     for(int k=j; k<j+i; k++){
                         for(String eventId : this.layerSketchList.get(prevBlockIdx).get(k).eventCountMap.keySet()){

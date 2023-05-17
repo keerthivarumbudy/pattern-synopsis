@@ -17,12 +17,12 @@ public class Main {
         }
         if(eventsList.size() != 0){
             // create sketch
-            Sketch sketch = new Sketch(600, eventsList);
+            Sketch sketch = new Sketch(60, eventsList);
             // query answering
-            int count = QueryAnswering.countPattern(List.of("1004856", "1005115"), List.of(6000), sketch.layerSketchList.get(0), sketch.resolution);
+//            int count = QueryAnswering.answerCount(List.of("1004856", "1005115"), List.of(6000), sketch);
+//            System.out.println(count);
 //            int count = QueryAnswering.countEvent(List.of("1005115"), List.of(6000), sketch.layerSketchList.get(0), sketch.resolution);
-
-            System.out.println(count);
+            QueryAnswering.upperBoundExperiments(List.of("1004856", "1005115"), List.of(2400), sketch);
         }
     }
 }
