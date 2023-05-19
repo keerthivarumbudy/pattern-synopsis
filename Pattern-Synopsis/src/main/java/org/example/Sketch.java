@@ -2,12 +2,14 @@ package org.example;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Sketch {
     int resolution; // in seconds
     List<List<SubSketch>> layerSketchList = new ArrayList<>();
-
+    Map<String, Integer> eventTotalCountMap = new HashMap<>();
     public Sketch(int resolution, List<Event> eventsList){
         this.resolution = resolution;
         SubSketch subSketch = new SubSketch();
@@ -27,6 +29,7 @@ public class Sketch {
                 subSketch.startTimestamp = tempEndTimestamp;
                 subSketch.resolution = 1;
                 subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution* 1000L);
+                this.eventTotalCountMap.put(event.eventId, this.eventTotalCountMap.getOrDefault(event.eventId, 0) + 1);
                 this.layerSketchList.get(0).add(subSketch);
 
             }
@@ -34,6 +37,7 @@ public class Sketch {
             this.layerSketchList.get(0).get(this.layerSketchList.get(0).size()-1).eventCountMap.put(
                     event.eventId, this.layerSketchList.get(0).get(this.layerSketchList.get(0).size()-1).
                             eventCountMap.getOrDefault(event.eventId, 0) + 1);
+            this.eventTotalCountMap.put(event.eventId, this.eventTotalCountMap.getOrDefault(event.eventId, 0) + 1);
 
         }
     }

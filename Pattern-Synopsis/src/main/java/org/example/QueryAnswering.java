@@ -1,7 +1,8 @@
 package org.example;
 
-import java.util.Collections;
-import java.util.List;
+import com.google.common.collect.ImmutableSet;
+
+import java.util.*;
 
 import static java.lang.Math.min;
 
@@ -21,6 +22,7 @@ public class QueryAnswering {
         // i.e. numBlocks = window/resolution
 
         // !!!right now the support is only for 2 event patterns
+        // !!!also take care of counting the same event within the same subsketch for a pattern with itself
         int count = 0;
         for(int i=0; i<layerSketches.size(); i++){
             int count1 = layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
@@ -71,4 +73,56 @@ public class QueryAnswering {
                     " for pattern "+event_ids.toString()+" with window "+(windows.get(0)*sketch.resolution));
         }
     }
+
+    public static List<ImmutableSet<String>> generateSequentialPatterns(Map<String, Integer> eventTotalCountMap, Integer numberOfEventsPerPattern){
+        List<String> sortedEventList = Utils.getSortedEvents(eventTotalCountMap);
+        EventCombinations eventCombinationsObject = new EventCombinations();
+
+        // creating the first partial combination
+        List<String> partialCombination;
+        List<String> combination;
+        List<Integer> partialComboIdx = new ArrayList<Integer>(){{
+            for(int i=0; i<numberOfEventsPerPattern-1; i++){
+                add(0);
+            }
+        }};
+        List<Integer> lastPossiblePartialComboIdx = new ArrayList<Integer>(){{
+            for(int i=0; i<numberOfEventsPerPattern-1; i++){
+                add(sortedEventList.size()-1);
+            }
+        }};
+        // make a copy of the sorted event list
+        List<String> sortedEventListCopy = new ArrayList<String>(sortedEventList);
+        // while we do not reach the end if the hashmap
+        while(partialComboIdx!=null){
+            List<Integer> finalPartialComboIdx = partialComboIdx;
+            partialCombination = new ArrayList<String>(){{
+                for(int i: finalPartialComboIdx){
+                    add(sortedEventListCopy.get(i));
+                }
+            }};
+
+            for(String event: sortedEventList) {
+                eventCombinationsObject.eventCombinations.add(new ArrayList<String>(partialCombination){{add(event);}});
+                combination = new ArrayList<String>(partialCombination){{add(event);}};
+                // create the list if not exists already and add the new combination
+                if(!eventCombinationsObject.singleEventCombinationsMap.containsKey(event))
+                eventCombinationsObject.singleEventCombinationsMap.put(event,new ArrayList<>());
+                eventCombinationsObject.singleEventCombinationsMap.get(event).add(combination);
+            }
+            // check if the combination made has all the same events. If yes, then remove that event from sortedEventList
+            if(partialCombination.stream().distinct().count() == 1){
+                sortedEventList.remove(partialCombination.get(0));
+            }
+            // get the next partial combination
+            partialComboIdx = eventCombinationsObject.getNextPartialCombination(partialComboIdx, lastPossiblePartialComboIdx, sortedEventList);
+
+        }
+
+        return null;
+
+    }
+//    public static List<List<String>> generatePatternsForCombinations(List<Set<String>> combinations){
+//
+//    }
 }
