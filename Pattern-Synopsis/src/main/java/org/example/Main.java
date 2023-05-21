@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableSet;
 
 import javax.management.Query;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -26,7 +28,18 @@ public class Main {
 //            System.out.println(count);
 //            int count = QueryAnswering.countEvent(List.of("1005115"), List.of(6000), sketch.layerSketchList.get(0), sketch.resolution);
 //            QueryAnswering.upperBoundExperiments(List.of("1004856", "1005115"), List.of(2400), sketch);
-            List<ImmutableSet<String>> res = QueryAnswering.generateSequentialPatterns(sketch.eventTotalCountMap, 3);
+//            List<ImmutableSet<String>> res = QueryAnswering.generateSequentialPatterns(sketch.eventTotalCountMap, 3);
+            // testing permutePatternsFromCombinations
+            List<String> testList = new ArrayList<>(){{
+                add("1");
+                add("2");
+                add("3");
+                add("4");
+            }};
+            // sort the list
+            testList.sort(String::compareTo);
+            CombinationPatterns.permutePatternsFromCombinations(testList,new ArrayList<>(), testList.size());
+
             return;
         }
     }
