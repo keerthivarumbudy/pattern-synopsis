@@ -38,8 +38,9 @@ public class Main {
             }};
             // sort the list
             testList.sort(String::compareTo);
-            CombinationPatterns.permutePatternsFromCombinations(testList,new ArrayList<>(), testList.size());
-
+            List<List<String>> patternList = new ArrayList<>() ;
+            CombinationPatterns.permutePatternsFromCombinations(testList,new ArrayList<>(), patternList);
+            System.out.println(patternList);
             return;
         }
     }

@@ -122,7 +122,5 @@ public class QueryAnswering {
         return null;
 
     }
-//    public static List<List<String>> generatePatternsForCombinations(List<Set<String>> combinations){
-//
-//    }
+
 }
