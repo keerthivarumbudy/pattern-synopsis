@@ -47,6 +47,8 @@ public class QueryAnswering {
             int count1 = layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
             for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
                 int count2 = layerSketches.get(j).eventCountMap.getOrDefault(event_ids.get(1), 0);
+                if(i==j)
+                    count2 /= 2;
                 count += count1 * count2;
             }
         }
