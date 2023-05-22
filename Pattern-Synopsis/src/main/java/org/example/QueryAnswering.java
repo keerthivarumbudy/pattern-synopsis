@@ -46,8 +46,8 @@ public class QueryAnswering {
             int count1 = layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
             for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
                 int count2 = layerSketches.get(j).eventCountMap.getOrDefault(event_ids.get(1), 0);
-                if(i==j)
-                    count2 /= 2;
+//                if(i==j)
+//                    count2 /= 2;
                 count += count1 * count2;
             }
         }
@@ -59,12 +59,12 @@ public class QueryAnswering {
             int count1 = layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
             for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
                 int count2 = layerSketches.get(j).eventCountMap.getOrDefault(event_ids.get(1), 0);
-                if(i==j)
-                    count2 /= 2;
+//                if(i==j)
+//                    count2 /= 2;
                 for(int k = j; k < min(j + numBlocks.get(1), layerSketches.size()); k++){
                     int count3 = layerSketches.get(k).eventCountMap.getOrDefault(event_ids.get(2), 0);
-                    if(j==k)
-                        count3 /= 2;
+//                    if(j==k)
+//                        count3 /= 2;
                     count += count1 * count2 * count3;
                 }
             }
@@ -102,9 +102,8 @@ public class QueryAnswering {
         return count;
     }
 
-    public static void upperBoundExperiments(List<String> event_ids, List<Integer> windows, Sketch sketch){
-        assert event_ids.size() >= 2: "The number of events should be greater than or equal to 2";
-        assert event_ids.size() == windows.size() + 1: "The number of windows should be one less than the number of events";
+    public static void upperBoundExperiments( List<Integer> windows, Sketch sketch) throws IOException {
+
         assert windows.stream().allMatch(window -> window >= sketch.resolution) : "All windows should be greater than or equal to resolution";
         windows = windows.stream().map(window -> window/sketch.resolution).toList() ;
         // choose the smallest prime number to be the smallest window size for the lowest composed block
@@ -114,12 +113,18 @@ public class QueryAnswering {
         Collections.sort(blockWindows, Collections.reverseOrder());
         temporarySketch.composeSketches(blockWindows);
         // get the upper bound one by one through the layers
-        Map<Integer, Map<List<String>, Integer>> patternMapsPerLayer = new HashMap<>();
-        for(int i=temporarySketch.layerSketchList.size()-1; i>=0; i--){
-            int upperBound = countPattern(event_ids, windows, temporarySketch.layerSketchList.get(i));
-            System.out.println("Layer with resolution="+temporarySketch.layerSketchList.get(i).get(0).resolution+" has upperbound="+upperBound+
-                    " for pattern "+event_ids.toString()+" with window "+(windows.get(0)*sketch.resolution));
+        Map<List<String>, Map<Integer, Integer>> patternMapsPerLayer = new HashMap<>();
+        Set<List<String>> patterns = generateSequentialPatterns(temporarySketch.eventTotalCountMap, 3);
+        for(List<String> pattern: patterns){
+            for(int i=temporarySketch.layerSketchList.size()-1; i>=0; i--){
+                int upperBound = countPattern(pattern, windows, temporarySketch.layerSketchList.get(i));
+                patternMapsPerLayer.putIfAbsent(pattern, new HashMap<>());
+                patternMapsPerLayer.get(pattern).put(i, upperBound);
+//                System.out.println("Layer with resolution="+temporarySketch.layerSketchList.get(i).get(0).resolution+" has upperbound="+upperBound+
+//                        " for pattern "+event_ids.toString()+" with window "+(windows.get(0)*sketch.resolution));
+            }
         }
+        return ;
     }
 
     public static Set<List<String>> generateSequentialPatterns(Map<String, Integer> eventTotalCountMap, Integer numberOfEventsPerPattern) throws IOException {

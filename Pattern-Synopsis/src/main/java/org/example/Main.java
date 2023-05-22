@@ -28,7 +28,7 @@ public class Main {
 //            System.out.println(count);
 //            int count = QueryAnswering.countEvent(List.of("1005115"), List.of(6000), sketch.layerSketchList.get(0), sketch.resolution);
 //            System.out.println(count);
-//            QueryAnswering.upperBoundExperiments(List.of("1004856", "1005115"), List.of(2400), sketch);
+            QueryAnswering.upperBoundExperiments( List.of(6000, 600), sketch);
 //            List<ImmutableSet<String>> res = QueryAnswering.generateSequentialPatterns(sketch.eventTotalCountMap, 3);
 
             // testing permutePatternsFromCombinations
@@ -45,7 +45,7 @@ public class Main {
 //            System.out.println(patternList);
 
             // testing generateSequentialPatterns
-            QueryAnswering.generateSequentialPatterns(sketch.eventTotalCountMap, 2);
+//            QueryAnswering.generateSequentialPatterns(sketch.eventTotalCountMap, 2);
             return;
         }
     }
