@@ -3,14 +3,12 @@ package org.example;
 import java.util.*;
 
 public class CombinationPatterns {
-    // {Combination,[{Pattern: UpperBound}] }
-    Map<List<String>,List<Map<List<String>, Integer>>> combinationPatternMap;
 
-    static void permutePatternsFromCombinations(List<String> s, List<String> l, List<List<String>> patternList) {
+    static void permutePatternsFromCombinations(List<String> s, List<String> l, Map<List<String>, Integer> patternList) {
 
         if (s.size() < 1){
             s.addAll(l);
-            patternList.add(s);
+            patternList.put(s,0);
             return;
         }
 

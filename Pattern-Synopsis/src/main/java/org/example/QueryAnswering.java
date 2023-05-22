@@ -1,7 +1,6 @@
 package org.example;
 
-import com.google.common.collect.ImmutableSet;
-
+import java.io.IOException;
 import java.util.*;
 
 import static java.lang.Math.min;
@@ -84,7 +83,15 @@ public class QueryAnswering {
         List<Integer> blockWindows = Utils.primeFactorization(windows.get(0)); // this can be modified to be the smallest prime factor of all windows
         // create composed sketches from subSketchesList
         Sketch temporarySketch = sketch;
+        Collections.sort(blockWindows, Collections.reverseOrder());
         temporarySketch.composeSketches(blockWindows);
+        // create combinations and patterns for all events
+
+        // get upperbound for those patterns
+        // get topK patterns
+        // get the best resolution count for those patterns
+        // prune the patterns that have count less than the best resolution count of kth pattern
+        // get the upperbound for the remaining patterns with better resolution
         return null;
     }
     public static int countEvent(List<String> event_ids, List<Integer> windows, List<SubSketch> layerSketches, int resolution){
@@ -107,6 +114,7 @@ public class QueryAnswering {
         Collections.sort(blockWindows, Collections.reverseOrder());
         temporarySketch.composeSketches(blockWindows);
         // get the upper bound one by one through the layers
+        Map<Integer, Map<List<String>, Integer>> patternMapsPerLayer = new HashMap<>();
         for(int i=temporarySketch.layerSketchList.size()-1; i>=0; i--){
             int upperBound = countPattern(event_ids, windows, temporarySketch.layerSketchList.get(i));
             System.out.println("Layer with resolution="+temporarySketch.layerSketchList.get(i).get(0).resolution+" has upperbound="+upperBound+
@@ -114,13 +122,15 @@ public class QueryAnswering {
         }
     }
 
-    public static List<ImmutableSet<String>> generateSequentialPatterns(Map<String, Integer> eventTotalCountMap, Integer numberOfEventsPerPattern){
-        List<String> sortedEventList = Utils.getSortedEvents(eventTotalCountMap);
+    public static Set<List<String>> generateSequentialPatterns(Map<String, Integer> eventTotalCountMap, Integer numberOfEventsPerPattern) throws IOException {
+        List<String> sortedEventList_orig = Utils.getSortedEvents(eventTotalCountMap);
+        List<String> sortedEventList = sortedEventList_orig.subList(0, 10);
         EventCombinations eventCombinationsObject = new EventCombinations();
-
+        Map<List<String>, Integer> patternList = new HashMap<>();
         // creating the first partial combination
         List<String> partialCombination;
         List<String> combination;
+
         List<Integer> partialComboIdx = new ArrayList<Integer>(){{
             for(int i=0; i<numberOfEventsPerPattern-1; i++){
                 add(0);
@@ -133,7 +143,7 @@ public class QueryAnswering {
         }};
         // make a copy of the sorted event list
         List<String> sortedEventListCopy = new ArrayList<String>(sortedEventList);
-        // while we do not reach the end if the hashmap
+        // while we do not reach the end of the hashmap
         while(partialComboIdx!=null){
             List<Integer> finalPartialComboIdx = partialComboIdx;
             partialCombination = new ArrayList<String>(){{
@@ -142,13 +152,18 @@ public class QueryAnswering {
                 }
             }};
 
+
+
             for(String event: sortedEventList) {
-                eventCombinationsObject.eventCombinations.add(new ArrayList<String>(partialCombination){{add(event);}});
+//                eventCombinationsObject.eventCombinations.add(new ArrayList<String>(partialCombination){{add(event);}});
                 combination = new ArrayList<String>(partialCombination){{add(event);}};
                 // create the list if not exists already and add the new combination
                 if(!eventCombinationsObject.singleEventCombinationsMap.containsKey(event))
-                eventCombinationsObject.singleEventCombinationsMap.put(event,new ArrayList<>());
+                    eventCombinationsObject.singleEventCombinationsMap.put(event,new ArrayList<>());
                 eventCombinationsObject.singleEventCombinationsMap.get(event).add(combination);
+                CombinationPatterns.permutePatternsFromCombinations(combination, new ArrayList<>(), patternList);
+                eventCombinationsObject.combinationPatternMap.put(combination, patternList);
+                eventCombinationsObject.eventPatterns.putAll(patternList);
             }
             // check if the combination made has all the same events. If yes, then remove that event from sortedEventList
             if(partialCombination.stream().distinct().count() == 1){
@@ -158,8 +173,9 @@ public class QueryAnswering {
             partialComboIdx = eventCombinationsObject.getNextPartialCombination(partialComboIdx, lastPossiblePartialComboIdx, sortedEventList);
 
         }
-
-        return null;
+        // write the event patterns to a file
+        Utils.writeListToFile(eventCombinationsObject.eventPatterns.keySet());
+        return eventCombinationsObject.eventPatterns.keySet();
 
     }
 

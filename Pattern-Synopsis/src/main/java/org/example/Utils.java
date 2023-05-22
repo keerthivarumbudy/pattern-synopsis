@@ -1,9 +1,8 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 import static java.lang.Math.min;
 
@@ -55,5 +54,13 @@ public final class Utils {
         }
 
         return count;
+    }
+
+    public static void writeListToFile(Set<List<String>> stringList) throws IOException {
+        FileWriter fileWriter = new FileWriter("output.txt");
+        for (List<String> str : stringList) {
+            fileWriter.write(str + System.lineSeparator());
+        }
+        fileWriter.close();
     }
 }
