@@ -15,22 +15,60 @@ public class QueryAnswering {
         assert windows.stream().allMatch(window -> window >= sketch.resolution);
         // divide all the windows by resolution
         windows = windows.stream().map(window -> window/sketch.resolution).toList();
-        return countPattern(event_ids, windows, sketch.layerSketchList.get(0));
+        if(event_ids.size()==2)
+            return countPattern(event_ids, windows, sketch.layerSketchList.get(0));
+        else
+            return countPattern3(event_ids, windows, sketch.layerSketchList.get(0));
     }
     public static int countPattern(List<String> event_ids, List<Integer> numBlocks, List<SubSketch> layerSketches){
+        if(event_ids.size()==2)
+            return countPattern2(event_ids, numBlocks, layerSketches);
+        else
+            return countPattern3(event_ids, numBlocks, layerSketches);
         // numBlocks is the window value of the pattern in terms of subsketches in the layer
         // i.e. numBlocks = window/resolution
 
         // !!!right now the support is only for 2 event patterns
         // !!!also take care of counting the same event within the same subsketch for a pattern with itself
+//        Integer count = 0;
+//        int count1;
+//        for(int i=0; i<layerSketches.size(); i++){
+//            count1 = layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
+//            if(count1!=0)
+//                for(int j=1; j<event_ids.size(); j++)
+//                    count +=Utils.forLoopThroughSketch(i, numBlocks, layerSketches, event_ids, count1, 1, 0);
+//            count +=Utils.forLoopThroughSketch(i, numBlocks, layerSketches, event_ids, count1, 1, 0);
+
+//        }
+    }
+    public static int countPattern2(List<String> event_ids, List<Integer> numBlocks, List<SubSketch> layerSketches){
         int count = 0;
-        for(int i=0; i<layerSketches.size(); i++){
+        for(int i=0; i<layerSketches.size(); i++) {
             int count1 = layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
-            for(int j=i; j<min(i+numBlocks.get(0), layerSketches.size()); j++) {
+            for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
                 int count2 = layerSketches.get(j).eventCountMap.getOrDefault(event_ids.get(1), 0);
-                count +=  count1*count2;
+                count += count1 * count2;
             }
         }
+        return count;
+    }
+    public static int countPattern3(List<String> event_ids, List<Integer> numBlocks, List<SubSketch> layerSketches){
+        int count = 0;
+        for(int i=0; i<layerSketches.size(); i++) {
+            int count1 = layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
+            for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
+                int count2 = layerSketches.get(j).eventCountMap.getOrDefault(event_ids.get(1), 0);
+                if(i==j)
+                    count2 /= 2;
+                for(int k = j; k < min(j + numBlocks.get(1), layerSketches.size()); k++){
+                    int count3 = layerSketches.get(k).eventCountMap.getOrDefault(event_ids.get(2), 0);
+                    if(j==k)
+                        count3 /= 2;
+                    count += count1 * count2 * count3;
+                }
+            }
+        }
+
         return count;
     }
     public static List<String> topK(Integer numberOfEvents, List<Integer> windows, Sketch sketch){

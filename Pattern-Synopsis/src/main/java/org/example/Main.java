@@ -22,25 +22,26 @@ public class Main {
         }
         if(eventsList.size() != 0){
             // create sketch
-            Sketch sketch = new Sketch(600, eventsList);
+            Sketch sketch = new Sketch(60, eventsList);
             // query answering
-//            int count = QueryAnswering.answerCount(List.of("1004856", "1005115"), List.of(6000), sketch);
-//            System.out.println(count);
+            int count = QueryAnswering.answerCount(List.of("1004856", "1005115", "1004767"), List.of(6000, 600), sketch);
+            System.out.println(count);
 //            int count = QueryAnswering.countEvent(List.of("1005115"), List.of(6000), sketch.layerSketchList.get(0), sketch.resolution);
+//            System.out.println(count);
 //            QueryAnswering.upperBoundExperiments(List.of("1004856", "1005115"), List.of(2400), sketch);
 //            List<ImmutableSet<String>> res = QueryAnswering.generateSequentialPatterns(sketch.eventTotalCountMap, 3);
             // testing permutePatternsFromCombinations
-            List<String> testList = new ArrayList<>(){{
-                add("1");
-                add("2");
-                add("3");
-                add("4");
-            }};
-            // sort the list
-            testList.sort(String::compareTo);
-            List<List<String>> patternList = new ArrayList<>() ;
-            CombinationPatterns.permutePatternsFromCombinations(testList,new ArrayList<>(), patternList);
-            System.out.println(patternList);
+//            List<String> testList = new ArrayList<>(){{
+//                add("1");
+//                add("2");
+//                add("3");
+//                add("4");
+//            }};
+//            // sort the list
+//            testList.sort(String::compareTo);
+//            List<List<String>> patternList = new ArrayList<>() ;
+//            CombinationPatterns.permutePatternsFromCombinations(testList,new ArrayList<>(), patternList);
+//            System.out.println(patternList);
             return;
         }
     }
