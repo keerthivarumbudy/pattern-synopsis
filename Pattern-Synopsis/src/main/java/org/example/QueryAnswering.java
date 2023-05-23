@@ -26,7 +26,8 @@ public class QueryAnswering {
     }
 
     public static Map<List<String>, Integer> answerTopKWithoutSequentialGeneration(Integer numberOfEvents, List<Integer> windows, Sketch sketch, int k) throws IOException {
-        PriorityQueue<Map.Entry<List<String>, Integer>> topKPatterns = topKWithoutSequentialGeneration(numberOfEvents, windows, sketch, k);
+//        PriorityQueue<Map.Entry<List<String>, Integer>> topKPatterns = topKWithoutSequentialGeneration(numberOfEvents, windows, sketch, k);
+        PriorityQueue<Map.Entry<List<String>, Integer>> topKPatterns = topKWithSequentialGeneration(numberOfEvents, windows, sketch, k);
         Map<List<String>, Integer> topKPatternsMap = new HashMap<>();
         for(Map.Entry<List<String>, Integer> entry: topKPatterns)
             topKPatternsMap.put(entry.getKey(), entry.getValue());
@@ -34,9 +35,6 @@ public class QueryAnswering {
         topKPatternsMap = sortByValue(topKPatternsMap);
         return topKPatternsMap;
     }
-
-
-
 
 
     public static int countEvent(List<String> event_ids, List<Integer> windows, List<SubSketch> layerSketches, int resolution){
