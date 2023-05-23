@@ -1,16 +1,14 @@
 package org.example;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Sketch {
     int resolution; // in seconds
     List<List<SubSketch>> layerSketchList = new ArrayList<>();
     Map<String, Integer> eventTotalCountMap = new HashMap<>();
-    public Sketch(int resolution, List<Event> eventsList){
+
+     public Sketch(int resolution, List<Event> eventsList){
         this.resolution = resolution;
         SubSketch subSketch = new SubSketch();
         subSketch.startTimestamp = eventsList.get(0).timestamp;
