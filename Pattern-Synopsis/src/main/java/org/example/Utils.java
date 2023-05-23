@@ -63,4 +63,18 @@ public final class Utils {
         }
         fileWriter.close();
     }
+    static Map<List<String>, Integer> sortByValue(Map<List<String>, Integer> topKPatternsMap) {
+        List<Map.Entry<List<String>, Integer>> list = new LinkedList<>(topKPatternsMap.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<List<String>, Integer>>() {
+            @Override
+            public int compare(Map.Entry<List<String>, Integer> o1, Map.Entry<List<String>, Integer> o2) {
+                return (o1.getValue()).compareTo(o2.getValue());
+            }
+        }.reversed());
+        Map<List<String>, Integer> sortedMap = new LinkedHashMap<>();
+        for(Map.Entry<List<String>, Integer> entry: list){
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
 }

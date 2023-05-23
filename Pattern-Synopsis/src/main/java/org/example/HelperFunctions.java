@@ -61,7 +61,7 @@ public class HelperFunctions {
     }
     public static Set<List<String>> generateSequentialPatterns(Map<String, Integer> eventTotalCountMap, Integer numberOfEventsPerPattern) throws IOException {
         List<String> sortedEventList_orig = Utils.getSortedEvents(eventTotalCountMap);
-        List<String> sortedEventList = sortedEventList_orig.subList(0, 100);
+        List<String> sortedEventList = sortedEventList_orig.subList(0, 10);
         EventCombinations eventCombinationsObject = new EventCombinations();
         Map<List<String>, Integer> patternList = new HashMap<>();
         // creating the first partial combination
@@ -93,9 +93,12 @@ public class HelperFunctions {
 //                eventCombinationsObject.eventCombinations.add(new ArrayList<String>(partialCombination){{add(event);}});
                 combination = new ArrayList<String>(partialCombination){{add(event);}};
                 // create the list if not exists already and add the new combination
-                if(!eventCombinationsObject.singleEventCombinationsMap.containsKey(event))
-                    eventCombinationsObject.singleEventCombinationsMap.put(event,new ArrayList<>());
-                eventCombinationsObject.singleEventCombinationsMap.get(event).add(combination);
+//                if(!eventCombinationsObject.singleEventCombinationsMap.containsKey(event))
+//                    eventCombinationsObject.singleEventCombinationsMap.put(event,new ArrayList<>());
+//                eventCombinationsObject.singleEventCombinationsMap.get(event).add(combination);
+                //
+
+                    //
                 CombinationPatterns.permutePatternsFromCombinations(combination, new ArrayList<>(), patternList);
                 eventCombinationsObject.combinationPatternMap.put(combination, patternList);
                 eventCombinationsObject.eventPatterns.putAll(patternList);
@@ -131,6 +134,83 @@ public class HelperFunctions {
             }
         }
         return pq;
+    }
+    public static PriorityQueue<Map.Entry<List<String>, Integer>> topKWithoutSequentialGeneration(Integer numberOfEvents, List<Integer> windows, Sketch sketch, int k) throws IOException {
+        assert numberOfEvents >= 2;
+        assert numberOfEvents == windows.size() + 1;
+        //assert that all windows are greater than resolution
+        assert windows.stream().allMatch(window -> window >= sketch.resolution);
+        // divide all the windows by resolution
+        windows = windows.stream().map(window -> window / sketch.resolution).toList();
+        // choose the smallest prime number to be the smallest window size for the lowest composed block
+        List<Integer> blockWindows = Utils.primeFactorization(windows.get(0)); // this can be modified to be the smallest prime factor of all windows
+        // create composed sketches from subSketchesList
+        Sketch temporarySketch = sketch;
+        Collections.sort(blockWindows, Collections.reverseOrder());
+        temporarySketch.composeSketches(blockWindows);
+        // create combinations and patterns for all events
+        //time generate all patterns
+        long startTime = System.nanoTime();
+        Set<List<String>> patterns = generateSequentialPatterns(temporarySketch.eventTotalCountMap, numberOfEvents);
+        long endTime = System.nanoTime();
+        System.out.println("Time to generate patterns: " + (endTime - startTime) / 1000000 + "ms");
+        // get upperbound for those patterns
+        Map<List<String>, Integer> patternMap = new HashMap<>();
+        startTime = System.nanoTime();
+        PriorityQueue<Map.Entry<List<String>, Integer>> topKPatterns = null;
+        for (int i = temporarySketch.layerSketchList.size() - 1; i > 0; i--) {
+            for (List<String> pattern : patterns) {
+                int upperBound = countPattern(pattern, windows, temporarySketch.layerSketchList.get(i));
+                patternMap.put(pattern, upperBound);
+            }
+            // get topK patterns
+            PriorityQueue<Map.Entry<List<String>, Integer>> pq = getTopKPatternsFromUpperBound(patternMap, k);
+            // get the best resolution count for those patterns
+            topKPatterns = new PriorityQueue<>(k, (a, b) -> a.getValue() - b.getValue());
+            while (pq.size() > 0) {
+                List<String> pattern = pq.poll().getKey();
+                if (topKPatterns.contains(pattern))
+                    continue;
+                int bestValue = countPattern(pattern, windows, temporarySketch.layerSketchList.get(0));
+                topKPatterns.add(Map.entry(pattern, bestValue));
+            }
+
+            // get the kth best resolution count out of the top-k patterns
+            int kthBestValue = topKPatterns.peek().getValue();
+            // prune the patterns from patternMap that have count less than the best resolution count of kth pattern
+            System.out.println("kthBestValue=" + kthBestValue);
+            System.out.println("Before pruning : patternMap.size()=" + patternMap.size());
+
+            patternMap.entrySet().removeIf(entry -> entry.getValue() <= kthBestValue);
+            System.out.println("After pruning  : patternMap.size()=" + patternMap.size());
+            // if patternMap is empty, then return the topKPatterns
+            if (patternMap.size() == 0) {
+                return topKPatterns;
+            }
+            // else, continue with the next layer
+            patterns = patternMap.keySet();
+        }
+
+        // get the best value for the remaining patterns with better resolution
+        for (List<String> pattern : patterns) {
+            if(pattern.containsAll(Arrays.asList("1005115", "1004767"))){
+                System.out.println("here");
+            }
+            int bestValue = countPattern(pattern, windows, temporarySketch.layerSketchList.get(0));
+            patternMap.put(pattern, bestValue);
+        }
+        // get topK patterns
+        PriorityQueue<Map.Entry<List<String>, Integer>> pq = getTopKPatternsFromUpperBound(patternMap, k);
+        // return the topKPatterns
+        endTime = System.nanoTime();
+        System.out.println("Time to get topK after pattern generation: " + (endTime - startTime) / 1000000 + "ms");
+        return pq;
+    }
+
+    public static PriorityQueue<Map.Entry<List<String>, Integer>> topKWithSequentialGeneration(Integer numberOfEvents, List<Integer> windows, Sketch sketch, int k) throws IOException {
+
+        return null;
+
     }
 
 }
