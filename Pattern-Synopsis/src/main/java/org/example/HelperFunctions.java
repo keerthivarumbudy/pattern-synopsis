@@ -311,7 +311,7 @@ public class HelperFunctions {
                     int upperBound = countPattern(pattern, windows, temporarySketch.layerSketchList.get(temporarySketch.layerSketchList.size()-1));
                     if (upperBound < kthBestValue){
                         pruned = true;
-                        System.out.println("Pattern being pruned - "+pattern.toString()+" with upper bound - "+upperBound);
+//                        System.out.println("Pattern being pruned - "+pattern.toString()+" with upper bound - "+upperBound);
                         continue;
                     }
                     patternList.put(pattern, upperBound);
@@ -326,9 +326,12 @@ public class HelperFunctions {
                 int minIdx = partialComboIdx.stream().min(Integer::compareTo).get();
                 int removeFromIdx = min(minIdx, lastAddedEventIdx);
                 sortedEventList.removeAll(sortedEventList.subList(removeFromIdx+1, sortedEventList.size()));
-                System.out.println("Pruned");
-                if(sortedEventList.size()==0)
+//                System.out.println("Pruned");
+                if(sortedEventList.size()==0){
+                    System.out.println("Returning because sorted event list is empty");
                     return topKPatterns;
+                }
+
             }
             // check if the combination made has all the same events. If yes, then remove that event from sortedEventList
             if(partialCombination.stream().distinct().count() == 1){
@@ -349,8 +352,11 @@ public class HelperFunctions {
                     patternList.put(pattern, upperBound);
                 }
             }
-            if(patternList.size()==k)
+            if(patternList.size()==k){
+                System.out.println("Returning because pattern list size is k");
                 return topKPatterns;
+            }
+
             PriorityQueue<Map.Entry<List<String>, Integer>> pq = getTopKPatternsFromUpperBound(patternList, k);
             // get the best resolution count for those patterns
             topKPatterns = new PriorityQueue<>(k, (a, b) -> a.getValue() - b.getValue());
@@ -369,6 +375,7 @@ public class HelperFunctions {
             patternList.put(pattern, upperBound);
         }
         topKPatterns = getTopKPatternsFromUpperBound(patternList, k);
+        System.out.println("Returning after the whoooole thing");
         return topKPatterns;
 
     }
