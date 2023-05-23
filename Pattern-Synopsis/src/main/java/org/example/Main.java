@@ -4,10 +4,7 @@ import com.google.common.collect.ImmutableSet;
 
 import javax.management.Query;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -46,7 +43,14 @@ public class Main {
 
             // testing generateSequentialPatterns
 //            QueryAnswering.generateSequentialPatterns(sketch.eventTotalCountMap, 2);
-            QueryAnswering.topKWithoutSequentialGeneration(3, List.of(6000, 600), sketch, 5);
+            // time the topKWithoutSequentialGeneration
+            long startTime = System.nanoTime();
+            PriorityQueue<Map.Entry<List<String>, Integer>> topKPatterns = QueryAnswering.topKWithoutSequentialGeneration(2, List.of(6000, 6000), sketch, 5);
+            long endTime = System.nanoTime();
+            System.out.println("Time taken for topKWithoutSequentialGeneration: " + (endTime - startTime)/1000000 + "ms");
+            for(Map.Entry<List<String>, Integer> entry: topKPatterns){
+                System.out.println(entry.getKey() + " " + entry.getValue());
+            }
             return;
         }
     }

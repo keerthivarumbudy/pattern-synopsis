@@ -61,7 +61,7 @@ public class HelperFunctions {
     }
     public static Set<List<String>> generateSequentialPatterns(Map<String, Integer> eventTotalCountMap, Integer numberOfEventsPerPattern) throws IOException {
         List<String> sortedEventList_orig = Utils.getSortedEvents(eventTotalCountMap);
-        List<String> sortedEventList = sortedEventList_orig.subList(0, 10);
+        List<String> sortedEventList = sortedEventList_orig.subList(0, 100);
         EventCombinations eventCombinationsObject = new EventCombinations();
         Map<List<String>, Integer> patternList = new HashMap<>();
         // creating the first partial combination
@@ -132,4 +132,5 @@ public class HelperFunctions {
         }
         return pq;
     }
+
 }
