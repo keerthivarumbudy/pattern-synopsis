@@ -319,7 +319,7 @@ public class HelperFunctions {
             partialComboIdx = eventCombinationsObject.getNextPartialCombination(partialComboIdx, lastPossiblePartialComboIdx, sortedEventList);
 
         }
-        for(int l=temporarySketch.layerSketchList.size()-1; l>=0; l--){
+        for(int l=temporarySketch.layerSketchList.size()-2; l>=0; l--){
             Set<List<String>> patterns = new HashSet<>(eventCombinationsObject.eventPatterns.keySet());
             for(List<String> pattern: patterns){
                 int upperBound = countPattern(pattern, windows, temporarySketch.layerSketchList.get(l));
