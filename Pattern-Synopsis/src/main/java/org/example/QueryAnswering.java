@@ -57,7 +57,7 @@ public class QueryAnswering {
         temporarySketch.composeSketches(blockWindows);
         // get the upper bound one by one through the layers
         Map<List<String>, Map<Integer, Integer>> patternMapsPerLayer = new HashMap<>();
-        Set<List<String>> patterns = generateSequentialPatterns(temporarySketch.eventTotalCountMap, 3);
+        Set<List<String>> patterns = generateSequentialPatterns(temporarySketch.eventTotalCountMap, 2);
         for(List<String> pattern: patterns){
             for(int i=temporarySketch.layerSketchList.size()-1; i>=0; i--){
                 int upperBound = countPattern(pattern, windows, temporarySketch.layerSketchList.get(i));
@@ -65,6 +65,13 @@ public class QueryAnswering {
                 patternMapsPerLayer.get(pattern).put(i, upperBound);
 //                System.out.println("Layer with resolution="+temporarySketch.layerSketchList.get(i).get(0).resolution+" has upperbound="+upperBound+
 //                        " for pattern "+event_ids.toString()+" with window "+(windows.get(0)*sketch.resolution));
+            }
+        }
+        for(List<String> pattern: patternMapsPerLayer.keySet()){
+            // check if upperbound of higher layer is greater than lower layer
+            for(int i=0; i<temporarySketch.layerSketchList.size()-1; i++){
+                if(patternMapsPerLayer.get(pattern).get(i) > patternMapsPerLayer.get(pattern).get(i+1))
+                    System.out.println("Upperbound of layer with resolution="+temporarySketch.layerSketchList.get(i).get(0).resolution+" is less than layer with resolution="+temporarySketch.layerSketchList.get(i+1).get(0).resolution);
             }
         }
         return ;

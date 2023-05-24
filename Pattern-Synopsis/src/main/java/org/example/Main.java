@@ -21,8 +21,8 @@ public class Main {
             // create sketch
             Sketch sketch = new Sketch(60, eventsList);
             // query answering
-//            int count = QueryAnswering.answerCount(List.of("1005115", "1004767"), List.of(6000), sketch);
-//            System.out.println(count);
+            int count = QueryAnswering.answerCount(List.of("1004856","1004856"), List.of(600, 600), sketch);
+            System.out.println(count);
 //            int count = QueryAnswering.countEvent(List.of("1005115"), List.of(6000), sketch.layerSketchList.get(0), sketch.resolution);
 //            System.out.println(count);
 //            QueryAnswering.upperBoundExperiments( List.of(6000, 600), sketch);
@@ -45,10 +45,11 @@ public class Main {
 //            QueryAnswering.generateSequentialPatterns(sketch.eventTotalCountMap, 2);
             // time the topKWithoutSequentialGeneration
             long startTime = System.nanoTime();
-            Map<List<String>, Integer> topKPatterns = QueryAnswering.answerTopKWithoutSequentialGeneration(3, List.of(6000, 600), sketch, 5);
+            Map<List<String>, Integer> topKPatterns = QueryAnswering.answerTopKWithoutSequentialGeneration(2, List.of(600, 600), sketch, 10);
             long endTime = System.nanoTime();
             System.out.println("Time taken for topKWithSequentialGeneration: " + (endTime - startTime)/1000000 + "ms");
-            System.out.println(topKPatterns);
+            for(List<String> pattern: topKPatterns.keySet())
+                System.out.println(pattern+" "+ topKPatterns.get(pattern));
             return;
         }
     }
