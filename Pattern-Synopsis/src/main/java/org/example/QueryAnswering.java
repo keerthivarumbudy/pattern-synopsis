@@ -11,7 +11,7 @@ import static org.example.HelperFunctions.*;
 import static org.example.Utils.*;
 
 public class QueryAnswering {
-    public static int answerCount(List<String> event_ids, List<Integer> windows, Sketch sketch){
+    public static int answerCount(List<Integer> event_ids, List<Integer> windows, Sketch sketch){
         // !!!right now the support is only for 2 event patterns
         assert event_ids.size() >= 2;
         assert event_ids.size() == windows.size() + 1;
@@ -19,17 +19,13 @@ public class QueryAnswering {
         assert windows.stream().allMatch(window -> window >= sketch.resolution);
         // divide all the windows by resolution
         windows = windows.stream().map(window -> window/sketch.resolution).toList();
-        if(event_ids.size()==2)
-            return countPattern(event_ids, windows, sketch.layerSketchList.get(0));
-        else
-            return countPattern3(event_ids, windows, sketch.layerSketchList.get(0));
+        return countPattern(event_ids, windows, sketch.layerSketchList.get(0));
     }
 
-    public static Map<List<String>, Integer> answerTopKWithoutSequentialGeneration(Integer numberOfEvents, List<Integer> windows, Sketch sketch, int k) throws IOException {
-//        PriorityQueue<Map.Entry<List<String>, Integer>> topKPatterns = topKWithoutSequentialGeneration(numberOfEvents, windows, sketch, k);
-        PriorityQueue<Map.Entry<List<String>, Integer>> topKPatterns = topKWithSequentialGeneration(numberOfEvents, windows, sketch, k);
-        Map<List<String>, Integer> topKPatternsMap = new HashMap<>();
-        for(Map.Entry<List<String>, Integer> entry: topKPatterns)
+    public static Map<List<Integer>, Integer> answerTopKWithoutSequentialGeneration(Integer numberOfEvents, List<Integer> windows, Sketch sketch, int k) throws IOException {
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = topKWithSequentialGeneration(numberOfEvents, windows, sketch, k);
+        Map<List<Integer>, Integer> topKPatternsMap = new HashMap<>();
+        for(Map.Entry<List<Integer>, Integer> entry: topKPatterns)
             topKPatternsMap.put(entry.getKey(), entry.getValue());
         //sort the map by value
         topKPatternsMap = sortByValue(topKPatternsMap);
@@ -37,7 +33,7 @@ public class QueryAnswering {
     }
 
 
-    public static int countEvent(List<String> event_ids, List<Integer> windows, List<SubSketch> layerSketches, int resolution){
+    public static int countEvent(List<Integer> event_ids, List<Integer> windows, List<SubSketch> layerSketches){
         int count = 0;
         for(int i=0; i<layerSketches.size(); i++){
             count += layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
@@ -56,9 +52,9 @@ public class QueryAnswering {
         Collections.sort(blockWindows, Collections.reverseOrder());
         temporarySketch.composeSketches(blockWindows);
         // get the upper bound one by one through the layers
-        Map<List<String>, Map<Integer, Integer>> patternMapsPerLayer = new HashMap<>();
-        Set<List<String>> patterns = generateSequentialPatterns(temporarySketch.eventTotalCountMap, 2);
-        for(List<String> pattern: patterns){
+        Map<List<Integer>, Map<Integer, Integer>> patternMapsPerLayer = new HashMap<>();
+        Set<List<Integer>> patterns = generateSequentialPatterns(temporarySketch.eventTotalCountMap, 2);
+        for(List<Integer> pattern: patterns){
             for(int i=temporarySketch.layerSketchList.size()-1; i>=0; i--){
                 int upperBound = countPattern(pattern, windows, temporarySketch.layerSketchList.get(i));
                 patternMapsPerLayer.putIfAbsent(pattern, new HashMap<>());
@@ -67,7 +63,7 @@ public class QueryAnswering {
 //                        " for pattern "+event_ids.toString()+" with window "+(windows.get(0)*sketch.resolution));
             }
         }
-        for(List<String> pattern: patternMapsPerLayer.keySet()){
+        for(List<Integer> pattern: patternMapsPerLayer.keySet()){
             // check if upperbound of higher layer is greater than lower layer
             for(int i=0; i<temporarySketch.layerSketchList.size()-1; i++){
                 if(patternMapsPerLayer.get(pattern).get(i) > patternMapsPerLayer.get(pattern).get(i+1))

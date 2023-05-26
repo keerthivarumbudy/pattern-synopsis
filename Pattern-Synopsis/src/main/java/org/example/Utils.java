@@ -26,15 +26,15 @@ public final class Utils {
     }
 
     // create a sorted list of events based on the value from eventTotalCountMap
-    public static List<String> getSortedEvents(Map<String, Integer> eventTotalCountMap){
+    public static List<Integer> getSortedEvents(Map<Integer, Integer> eventTotalCountMap){
         // in descending order
-        List<String> sortedEvents = new ArrayList<>();
-        Map<String, Integer> sortedMap = new LinkedHashMap<>();
+        List<Integer> sortedEvents = new ArrayList<>();
+        Map<Integer, Integer> sortedMap = new LinkedHashMap<>();
         eventTotalCountMap.entrySet()
                 .stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
                 .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
-        for(String key : sortedMap.keySet()){
+        for(Integer key : sortedMap.keySet()){
             sortedEvents.add(key);
         }
         return sortedEvents;
@@ -56,23 +56,23 @@ public final class Utils {
         return count;
     }
 
-    public static void writeListToFile(Set<List<String>> stringList) throws IOException {
+    public static void writeListToFile(Set<List<Integer>> stringList) throws IOException {
         FileWriter fileWriter = new FileWriter("output.txt");
-        for (List<String> str : stringList) {
+        for (List<Integer> str : stringList) {
             fileWriter.write(str + System.lineSeparator());
         }
         fileWriter.close();
     }
-    static Map<List<String>, Integer> sortByValue(Map<List<String>, Integer> topKPatternsMap) {
-        List<Map.Entry<List<String>, Integer>> list = new LinkedList<>(topKPatternsMap.entrySet());
-        Collections.sort(list, new Comparator<Map.Entry<List<String>, Integer>>() {
+    static Map<List<Integer>, Integer> sortByValue(Map<List<Integer>, Integer> topKPatternsMap) {
+        List<Map.Entry<List<Integer>, Integer>> list = new LinkedList<>(topKPatternsMap.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<List<Integer>, Integer>>() {
             @Override
-            public int compare(Map.Entry<List<String>, Integer> o1, Map.Entry<List<String>, Integer> o2) {
+            public int compare(Map.Entry<List<Integer>, Integer> o1, Map.Entry<List<Integer>, Integer> o2) {
                 return (o1.getValue()).compareTo(o2.getValue());
             }
         }.reversed());
-        Map<List<String>, Integer> sortedMap = new LinkedHashMap<>();
-        for(Map.Entry<List<String>, Integer> entry: list){
+        Map<List<Integer>, Integer> sortedMap = new LinkedHashMap<>();
+        for(Map.Entry<List<Integer>, Integer> entry: list){
             sortedMap.put(entry.getKey(), entry.getValue());
         }
         return sortedMap;

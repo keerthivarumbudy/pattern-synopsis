@@ -6,13 +6,13 @@ import java.util.*;
 public class Sketch {
     int resolution; // in seconds
     List<List<SubSketch>> layerSketchList = new ArrayList<>();
-    Map<String, Integer> eventTotalCountMap = new HashMap<>();
+    Map<Integer, Integer> eventTotalCountMap = new HashMap<>();
 
      public Sketch(int resolution, List<Event> eventsList){
         this.resolution = resolution;
         SubSketch subSketch = new SubSketch();
         subSketch.startTimestamp = eventsList.get(0).timestamp;
-        subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution* 1000L);
+        subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution* 1000);
         subSketch.resolution = 1;
         List<SubSketch> subSketches = new ArrayList<>();
         this.layerSketchList.add(subSketches);
@@ -26,7 +26,7 @@ public class Sketch {
                 subSketch = new SubSketch();
                 subSketch.startTimestamp = tempEndTimestamp;
                 subSketch.resolution = 1;
-                subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution* 1000L);
+                subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution* 1000);
                 this.eventTotalCountMap.put(event.eventId, this.eventTotalCountMap.getOrDefault(event.eventId, 0) + 1);
                 this.layerSketchList.get(0).add(subSketch);
 
@@ -58,7 +58,7 @@ public class Sketch {
                 subSketch.resolution = resolution_tracker;
                 try{
                     for(int k=j; k<j+i; k++){
-                        for(String eventId : this.layerSketchList.get(prevBlockIdx).get(k).eventCountMap.keySet()){
+                        for(Integer eventId : this.layerSketchList.get(prevBlockIdx).get(k).eventCountMap.keySet()){
                             subSketch.eventCountMap.put(eventId, subSketch.eventCountMap.getOrDefault(eventId, 0) +
                                     this.layerSketchList.get(prevBlockIdx).get(k).eventCountMap.get(eventId));
                         }

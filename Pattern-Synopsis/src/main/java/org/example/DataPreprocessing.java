@@ -22,7 +22,7 @@ public class DataPreprocessing{
          for (String line : lines.subList(1, lines.size() - 1)) {
              String[] array = line.split(",");
              Event event = new Event();
-             event.eventId = array[eventIdx];
+             event.eventId = Integer.valueOf(array[eventIdx]);
              event.timestamp = fixTimeFormat(array[timeIdx]);
              eventsList.add(event);
 //             System.out.println(event.eventId + " " + event.timestamp);
