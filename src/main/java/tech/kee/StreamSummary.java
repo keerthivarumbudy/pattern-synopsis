@@ -54,13 +54,10 @@ public class StreamSummary {
                 Sketch newSketch = new Sketch(
                         currentSketch.endTimestamp,
                         currentSketch.endTimestamp.plus(resolutionSeconds, ChronoUnit.SECONDS));
-                // First increment...
-                eventTotalCountMap.merge(event.id(), 1, Integer::sum);
                 layerSketchList.get(0).add(newSketch);
                 currentSketch = newSketch;
             }
             currentSketch.eventCountMap.merge(event.id(), 1, Integer::sum);
-            // Second increment??
             eventTotalCountMap.merge(event.id(), 1, Integer::sum);
         }
     }
