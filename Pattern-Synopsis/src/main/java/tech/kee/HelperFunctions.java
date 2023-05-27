@@ -1,47 +1,49 @@
-package org.example;
+package tech.kee;
 
 import java.io.IOException;
 import java.util.*;
 
 import static java.lang.Math.*;
-import static org.example.HelperFunctions.transformParameterForTopK;
 
 public class HelperFunctions {
-    public static int countPattern(List<Integer> event_ids, List<Integer> numBlocks, List<SubSketch> layerSketches){
-        if(event_ids.size()==2)
-            return countPattern2(event_ids, numBlocks, layerSketches);
+    public static int countPattern(List<Integer> eventIds, List<Integer> numBlocks, List<SubSketch> layerSketches){
+        if(eventIds.size()==2)
+            return countPattern2(eventIds, numBlocks, layerSketches);
         else
-            return countPattern3(event_ids, numBlocks, layerSketches);
-
+            return countPattern3(eventIds, numBlocks, layerSketches);
     }
-    public static int countPattern2(List<Integer> event_ids, List<Integer> numBlocks, List<SubSketch> layerSketches){
+
+    public static int countPattern2(List<Integer> eventIds, List<Integer> numBlocks, List<SubSketch> layerSketches){
         int count = 0;
         for(int i=0; i<layerSketches.size(); i++) {
-            int count1 = layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
+            int count1 = layerSketches.get(i).eventCountMap.getOrDefault(eventIds.get(0), 0);
             if(count1 <= 0)
                 continue;
             for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
-                int count2 = layerSketches.get(j).eventCountMap.getOrDefault(event_ids.get(1), 0);
-//                if(i==j)
-//                    count2 /= 2;
+                int count2 = layerSketches.get(j).eventCountMap.getOrDefault(eventIds.get(1), 0);
                 count += count1 * count2;
             }
         }
         return count;
     }
-    public static int countPattern3(List<Integer> event_ids, List<Integer> numBlocks, List<SubSketch> layerSketches){
+
+    public static int countPattern3(List<Integer> eventIds, List<Integer> numBlocks, List<SubSketch> layerSketches){
         int count = 0;
         for(int i=0; i<layerSketches.size(); i++) {
-            int count1 = layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
+            int count1 = layerSketches.get(i).eventCountMap.getOrDefault(eventIds.get(0), 0);
+            if(count1 <= 0)
+                continue;
             for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
-                int count2 = layerSketches.get(j).eventCountMap.getOrDefault(event_ids.get(1), 0);
+                int count2 = layerSketches.get(j).eventCountMap.getOrDefault(eventIds.get(1), 0);
+                if(count2 <= 0)
+                    continue;
                 int count3 = 0;
-                if(numBlocks.size()>1){
-                    for(int k = j; k < min(j + numBlocks.get(1), layerSketches.size()); k++){
-                        count3 = layerSketches.get(k).eventCountMap.getOrDefault(event_ids.get(2), 0);
+                if(numBlocks.size()>1) {
+                    for (int k = j; k < min(j + numBlocks.get(1), layerSketches.size()); k++) {
+                        count3 = layerSketches.get(k).eventCountMap.getOrDefault(eventIds.get(2), 0);
+                        if (count3 <= 0)
+                            continue;
                     }
-                }else{
-                    count3 = layerSketches.get(layerSketches.size()-1).eventCountMap.getOrDefault(event_ids.get(2), 0);
                 }
                 count += count1 * count2 * count3;
 
@@ -121,10 +123,10 @@ public class HelperFunctions {
         return pq;
     }
     public static Sketch transformParameterForTopK(Integer numberOfEvents, List<Integer> windows, Sketch sketch, int k){
-        assert numberOfEvents >= 2;
-        assert numberOfEvents == windows.size() + 1;
+        assert numberOfEvents >= 2 : "Number of events should be greater than or equal to 2";
+        assert numberOfEvents == windows.size() + 1 : "Number of windows should be one less than number of events";
         //assert that all windows are greater than resolution
-        assert windows.stream().allMatch(window -> window >= sketch.resolution);
+        assert windows.stream().allMatch(window -> window >= sketch.resolution): "All windows should be greater than or equal to resolution";
         // divide all the windows by resolution
         windows = windows.stream().map(window -> window / sketch.resolution).toList();
         // choose the smallest prime number to be the smallest window size for the lowest composed block

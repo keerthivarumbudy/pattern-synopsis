@@ -1,4 +1,4 @@
-package org.example;
+package tech.kee;
 
 import java.io.FileWriter;
 import java.io.IOException;

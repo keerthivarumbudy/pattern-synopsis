@@ -1,25 +1,23 @@
-package org.example;
-
-import org.apache.commons.lang3.tuple.Pair;
+package tech.kee;
 
 import java.io.IOException;
 import java.util.*;
 
 import static java.lang.Math.min;
 import static java.lang.Math.negateExact;
-import static org.example.HelperFunctions.*;
-import static org.example.Utils.*;
+import static tech.kee.HelperFunctions.*;
+import static tech.kee.Utils.*;
 
 public class QueryAnswering {
-    public static int answerCount(List<Integer> event_ids, List<Integer> windows, Sketch sketch){
+    public static int answerCount(List<Integer> eventIds, List<Integer> windows, Sketch sketch){
         // !!!right now the support is only for 2 event patterns
-        assert event_ids.size() >= 2;
-        assert event_ids.size() == windows.size() + 1;
+        assert eventIds.size() >= 2;
+        assert eventIds.size() == windows.size() + 1;
         //assert that all windows are greater than resolution
         assert windows.stream().allMatch(window -> window >= sketch.resolution);
         // divide all the windows by resolution
         windows = windows.stream().map(window -> window/sketch.resolution).toList();
-        return countPattern(event_ids, windows, sketch.layerSketchList.get(0));
+        return countPattern(eventIds, windows, sketch.layerSketchList.get(0));
     }
 
     public static Map<List<Integer>, Integer> answerTopKWithoutSequentialGeneration(Integer numberOfEvents, List<Integer> windows, Sketch sketch, int k) throws IOException {
@@ -42,7 +40,6 @@ public class QueryAnswering {
     }
 
     public static void upperBoundExperiments( List<Integer> windows, Sketch sketch) throws IOException {
-
         assert windows.stream().allMatch(window -> window >= sketch.resolution) : "All windows should be greater than or equal to resolution";
         windows = windows.stream().map(window -> window/sketch.resolution).toList() ;
         // choose the smallest prime number to be the smallest window size for the lowest composed block

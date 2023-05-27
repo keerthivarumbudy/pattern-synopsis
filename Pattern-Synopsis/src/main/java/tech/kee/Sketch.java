@@ -1,21 +1,21 @@
-package org.example;
+package tech.kee;
 
 import java.sql.Timestamp;
 import java.util.*;
 
 public class Sketch {
     int resolution; // in seconds
+    List<Event> eventsList;
     List<List<SubSketch>> layerSketchList = new ArrayList<>();
     Map<Integer, Integer> eventTotalCountMap = new HashMap<>();
 
-     public Sketch(int resolution, List<Event> eventsList){
+    public Sketch(int resolution, List<Event> eventsList){
         this.resolution = resolution;
         SubSketch subSketch = new SubSketch();
         subSketch.startTimestamp = eventsList.get(0).timestamp;
         subSketch.endTimestamp = new Timestamp(subSketch.startTimestamp.getTime() + resolution* 1000);
         subSketch.resolution = 1;
-        List<SubSketch> subSketches = new ArrayList<>();
-        this.layerSketchList.add(subSketches);
+        this.layerSketchList.add(new ArrayList<>());
         this.layerSketchList.get(0).add(subSketch);
         for (Event event : eventsList) {
             if((event.timestamp.getTime() > subSketch.endTimestamp.getTime())){

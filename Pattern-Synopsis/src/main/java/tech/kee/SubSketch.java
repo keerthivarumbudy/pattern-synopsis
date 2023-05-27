@@ -1,4 +1,4 @@
-package org.example;
+package tech.kee;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
