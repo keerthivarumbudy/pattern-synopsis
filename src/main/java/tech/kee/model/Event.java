@@ -1,4 +1,5 @@
 package tech.kee.model;
 
-public record Event(int id) {
-}
+import java.time.Instant;
+
+public record Event(int id, Instant timestamp){}

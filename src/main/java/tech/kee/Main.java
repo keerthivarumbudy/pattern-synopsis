@@ -1,24 +1,28 @@
 package tech.kee;
 
+import tech.kee.model.Event;
+
 import java.io.IOException;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        List<Event> eventsList = null;
+        List<Event> events = null;
+
     // read from csv and perform data preprocessing
         String filePath = "/Users/keerthivarumbudy/Downloads/archive (1)/2019-oct_10k.csv";
         try {
-            eventsList = DataPreprocessing.readFromCsvAndReturnEventsList(filePath, 0, 2 );
+            events = DataPreprocessing.readFromCsvAndReturnEventsList(filePath, 0, 2 );
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(eventsList.size() != 0){
+        if(events.size() != 0){
             // create sketch
-            Sketch sketch = new Sketch(10, eventsList);
+            StreamSummary streamSummary = new StreamSummary(10);
+            streamSummary.addEvents(events);
             // query answering
-            int count = QueryAnswering.answerCount(List.of(1004856,1004856,1004856), List.of(6000, 600), sketch);
+            int count = QueryAnswering.answerCount(List.of(1004856,1004856,1004856), List.of(6000, 600), streamSummary);
             System.out.println(count);
 //            int count_event = QueryAnswering.countEvent(List.of(1004856), List.of(6000), sketch.layerSketchList.get(0));
 //            System.out.println("count_event "+count_event);

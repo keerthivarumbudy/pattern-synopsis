@@ -40,7 +40,7 @@ public final class Utils {
         return sortedEvents;
     }
 
-    public static int forLoopThroughSketch(int i, List<Integer> numBlocks, List<SubSketch> layerSketches, List<String> event_ids, int count1, int eventIdx, int count){
+    public static int forLoopThroughSketch(int i, List<Integer> numBlocks, List<Sketch> layerSketches, List<String> event_ids, int count1, int eventIdx, int count){
         if(eventIdx == event_ids.size()) {
             return count1;
         }
