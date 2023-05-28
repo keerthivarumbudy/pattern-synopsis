@@ -99,6 +99,13 @@ public class StreamSummary {
             nextLevel++;
             currentLayer = nextLayer.build();
         }
+        // making the whole stream into a layer
+        ImmutableList.Builder<Sketch> nextLayer = ImmutableList.builder();
+        nextLayer.add(currentLayer.subList(0, currentLayer.size()).stream()
+                .reduce(Sketch::merge)
+                .orElseThrow());
+        summaryLayers.put(nextLevel, nextLayer.build());
+
         return summaryLayers.build();
     }
 
