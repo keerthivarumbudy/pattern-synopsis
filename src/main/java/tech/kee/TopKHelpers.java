@@ -1,57 +1,15 @@
 package tech.kee;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
 import java.io.IOException;
 import java.util.*;
+import static tech.kee.CountingHelpers.*;
 
 import static java.lang.Math.*;
 
-public class HelperFunctions {
-    public static int countPattern(List<Integer> eventIds, List<Integer> numBlocks, List<Sketch> layerSketches){
-        if(eventIds.size()==2)
-            return countPattern2(eventIds, numBlocks, layerSketches);
-        else
-            return countPattern3(eventIds, numBlocks, layerSketches);
-    }
-
-    public static int countPattern2(List<Integer> eventIds, List<Integer> numBlocks, List<Sketch> layerSketches){
-        int count = 0;
-        for(int i=0; i<layerSketches.size(); i++) {
-            int count1 = layerSketches.get(i).eventCountMap.getOrDefault(eventIds.get(0), 0);
-            if(count1 <= 0)
-                continue;
-            for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
-                int count2 = layerSketches.get(j).eventCountMap.getOrDefault(eventIds.get(1), 0);
-                count += count1 * count2;
-            }
-        }
-        return count;
-    }
-
-    public static int countPattern3(List<Integer> eventIds, List<Integer> numBlocks, List<Sketch> layerSketches){
-        int count = 0;
-        for(int i=0; i<layerSketches.size(); i++) {
-            int count1 = layerSketches.get(i).eventCountMap.getOrDefault(eventIds.get(0), 0);
-            if(count1 <= 0)
-                continue;
-            for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
-                int count2 = layerSketches.get(j).eventCountMap.getOrDefault(eventIds.get(1), 0);
-                if(count2 <= 0)
-                    continue;
-                int count3 = 0;
-                if(numBlocks.size()>1) {
-                    for (int k = j; k < min(j + numBlocks.get(1), layerSketches.size()); k++) {
-                        count3 = layerSketches.get(k).eventCountMap.getOrDefault(eventIds.get(2), 0);
-                        if (count3 <= 0)
-                            continue;
-                    }
-                }
-                count += count1 * count2 * count3;
-
-            }
-        }
-
-        return count;
-    }
+public class TopKHelpers {
     public static Set<List<Integer>> generateSequentialPatterns(Map<Integer, Integer> eventTotalCountMap, Integer numberOfEventsPerPattern) throws IOException {
         List<Integer> sortedEventList_orig = Utils.getSortedEvents(eventTotalCountMap);
         List<Integer> sortedEventList = sortedEventList_orig.subList(0, 100);
@@ -104,7 +62,7 @@ public class HelperFunctions {
 
     }
 
-    public static PriorityQueue<Map.Entry<List<Integer>, Integer>> getTopKPatternsFromUpperBound(Map<List<Integer>, Integer> patternCountMap, Integer k) {
+    public static PriorityQueue<Map.Entry<List<Integer>, Integer>> getTopKPatternsFromCount(Map<List<Integer>, Integer> patternCountMap, Integer k) {
 
         // use space-saving algorithm to get the top k patterns
         // create a priority queue of size k
@@ -122,7 +80,20 @@ public class HelperFunctions {
         }
         return pq;
     }
-    public static StreamSummary transformParameterForTopK(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k){
+    public static ImmutableMap<Integer, ImmutableList<Sketch>> transformParameterForTopK(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k){
+        assert numberOfEvents >= 2 : "Number of events should be greater than or equal to 2";
+        assert numberOfEvents == windows.size() + 1 : "Number of windows should be one less than number of events";
+        //assert that all windows are greater than resolution
+        assert windows.stream().allMatch(window -> window >= streamSummary.resolutionSeconds): "All windows should be greater than or equal to resolution";
+
+        // choose the smallest prime number to be the smallest window size for the lowest composed block
+        List<Integer> blockWindows = Utils.primeFactorization(windows.get(0)); // this can be modified to be the smallest prime factor of all windows
+
+        ImmutableMap<Integer, ImmutableList<Sketch>> layerSketches = streamSummary.getSummaryLayers(blockWindows);
+        return layerSketches;
+    }
+
+    public static StreamSummary transformParameterForTopKLegacy(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k){
         assert numberOfEvents >= 2 : "Number of events should be greater than or equal to 2";
         assert numberOfEvents == windows.size() + 1 : "Number of windows should be one less than number of events";
         //assert that all windows are greater than resolution
@@ -137,35 +108,34 @@ public class HelperFunctions {
         temporaryStreamSummary.legacyComposeSketches(blockWindows);
         return temporaryStreamSummary;
     }
+
     public static PriorityQueue<Map.Entry<List<Integer>, Integer>> topKWithoutSequentialGeneration(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
         // transform the parameters to be used for topK
-        StreamSummary temporaryStreamSummary = transformParameterForTopK(numberOfEvents, windows, streamSummary, k);
-        // divide all the windows by resolution
-        windows = windows.stream().map(window -> window / streamSummary.resolutionSeconds).toList();
+        ImmutableMap<Integer, ImmutableList<Sketch>> layerSketches = transformParameterForTopK(numberOfEvents, windows, streamSummary, k);
         // create combinations and patterns for all events
         //time generateAllPatterns
         long startTime = System.nanoTime();
-        Set<List<Integer>> patterns = generateSequentialPatterns(temporaryStreamSummary.eventTotalCountMap, numberOfEvents);
+        Set<List<Integer>> patterns = generateSequentialPatterns(streamSummary.eventTotalCountMap, numberOfEvents);
         long endTime = System.nanoTime();
-        System.out.println("Time to generate patterns: " + (endTime - startTime) / 1000000 + "ms");
+        System.out.println("Time to generate "+ patterns.size()+ " patterns: " + (endTime - startTime) / 1000000 + "ms");
         // get upperbound for those patterns
         Map<List<Integer>, Integer> patternMap = new HashMap<>();
         startTime = System.nanoTime();
         PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = null;
-        for (int i = temporaryStreamSummary.layerSketchList.size() - 1; i > 0; i--) {
+        for (int i = layerSketches.size()-1; i > 0; i--) {
             for (List<Integer> pattern : patterns) {
-                int upperBound = countPattern(pattern, windows, temporaryStreamSummary.layerSketchList.get(i));
+                int upperBound = countPattern(pattern, windows, layerSketches.get(i));
                 patternMap.put(pattern, upperBound);
             }
             // get topK patterns
-            PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromUpperBound(patternMap, k);
+            PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromCount(patternMap, k);
             // get the best resolution count for those patterns
             topKPatterns = new PriorityQueue<>(k, (a, b) -> a.getValue() - b.getValue());
             while (pq.size() > 0) {
                 List<Integer> pattern = pq.poll().getKey();
                 if (topKPatterns.contains(pattern))
                     continue;
-                int bestValue = countPattern(pattern, windows, temporaryStreamSummary.layerSketchList.get(0));
+                int bestValue = countPattern(pattern, windows, layerSketches.get(0));
                 topKPatterns.add(Map.entry(pattern, bestValue));
             }
 
@@ -187,18 +157,18 @@ public class HelperFunctions {
 
         // get the best value for the remaining patterns with better resolution
         for (List<Integer> pattern : patterns) {
-            int bestValue = countPattern(pattern, windows, temporaryStreamSummary.layerSketchList.get(0));
+            int bestValue = countPattern(pattern, windows, layerSketches.get(0));
             patternMap.put(pattern, bestValue);
         }
         // get topK patterns
-        PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromUpperBound(patternMap, k);
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromCount(patternMap, k);
         // return the topKPatterns
         endTime = System.nanoTime();
         System.out.println("Time to get topK after pattern generation: " + (endTime - startTime) / 1000000 + "ms");
         return pq;
     }
     public static PriorityQueue<Map.Entry<List<Integer>, Integer>> getTopKPatterns(Map<List<Integer>, Integer> patternList, StreamSummary temporaryStreamSummary, List<Integer> windows, int k, PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns){
-        PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromUpperBound(patternList, k);
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromCount(patternList, k);
         // get the best resolution count for those patterns
         if(topKPatterns == null)
         topKPatterns = new PriorityQueue<>(k, (a, b) -> a.getValue() - b.getValue());
@@ -222,7 +192,7 @@ public class HelperFunctions {
 
     public static PriorityQueue<Map.Entry<List<Integer>, Integer>> topKWithSequentialGeneration(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
         // transform the parameters to be used for topK
-        StreamSummary temporaryStreamSummary = transformParameterForTopK(numberOfEvents, windows, streamSummary, k);
+        StreamSummary temporaryStreamSummary = transformParameterForTopKLegacy(numberOfEvents, windows, streamSummary, k);
         // divide all the windows by resolution
         windows = windows.stream().map(window -> window / streamSummary.resolutionSeconds).toList();
 

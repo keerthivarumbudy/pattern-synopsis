@@ -5,9 +5,9 @@ import java.util.*;
 
 import static java.lang.Math.min;
 import static java.lang.Math.negateExact;
-import static tech.kee.HelperFunctions.*;
+import static tech.kee.TopKHelpers.*;
 import static tech.kee.Utils.*;
-
+import static tech.kee.CountingHelpers.*;
 public class QueryAnswering {
     public static int answerCount(List<Integer> eventIds, List<Integer> windows, StreamSummary streamSummary){
         // !!!right now the support is only for 2 event patterns
@@ -20,8 +20,9 @@ public class QueryAnswering {
         return countPattern(eventIds, windows, streamSummary.baseSummaryLayer);
     }
 
-    public static Map<List<Integer>, Integer> answerTopKWithoutSequentialGeneration(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
-        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = topKWithSequentialGeneration(numberOfEvents, windows, streamSummary, k);
+    public static Map<List<Integer>, Integer> answerTopK(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
+        windows = windows.stream().map(window -> window / streamSummary.resolutionSeconds).toList();
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = topKWithoutSequentialGeneration(numberOfEvents, windows, streamSummary, k);
         Map<List<Integer>, Integer> topKPatternsMap = new HashMap<>();
         for(Map.Entry<List<Integer>, Integer> entry: topKPatterns)
             topKPatternsMap.put(entry.getKey(), entry.getValue());

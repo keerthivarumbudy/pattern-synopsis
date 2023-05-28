@@ -97,6 +97,7 @@ public class StreamSummary {
             }
             summaryLayers.put(nextLevel, nextLayer.build());
             nextLevel++;
+            currentLayer = nextLayer.build();
         }
         return summaryLayers.build();
     }
