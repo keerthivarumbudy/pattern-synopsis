@@ -22,9 +22,9 @@ public class Main {
             StreamSummary streamSummary = new StreamSummary(10);
             streamSummary.addEvents(events);
             // query answering
-            int count = QueryAnswering.answerCount(List.of(1004856,1004856,1004856), List.of(6000, 600), streamSummary);
+            int count = QueryAnswering.answerCount(List.of(1004856,1004856,1004856), List.of(60, 60), streamSummary);
             System.out.println(count);
-//            int count_event = QueryAnswering.countEvent(List.of(1004856), List.of(6000), sketch.layerSketchList.get(0));
+//            int count_event = QueryAnswering.countEvent(List.of(1004856), List.of(6000), streamSummary);
 //            System.out.println("count_event "+count_event);
 //            QueryAnswering.upperBoundExperiments( List.of(6000, 600), sketch);
 //            List<ImmutableSet<String>> res = QueryAnswering.generateSequentialPatterns(sketch.eventTotalCountMap, 3);

@@ -17,7 +17,7 @@ public class QueryAnswering {
         assert windows.stream().allMatch(window -> window >= streamSummary.resolutionSeconds);
         // divide all the windows by resolution
         windows = windows.stream().map(window -> window/ streamSummary.resolutionSeconds).toList();
-        return countPattern(eventIds, windows, streamSummary.layerSketchList.get(0));
+        return countPattern(eventIds, windows, streamSummary.baseSummaryLayer);
     }
 
     public static Map<List<Integer>, Integer> answerTopKWithoutSequentialGeneration(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
@@ -31,11 +31,13 @@ public class QueryAnswering {
     }
 
 
-    public static int countEvent(List<Integer> event_ids, List<Integer> windows, List<Sketch> layerSketches){
+    public static int countEvent(List<Integer> eventIds, List<Integer> windows, StreamSummary streamSummary){
         int count = 0;
-        for(int i=0; i<layerSketches.size(); i++){
-            count += layerSketches.get(i).eventCountMap.getOrDefault(event_ids.get(0), 0);
+        for(int i=0; i<streamSummary.baseSummaryLayer.size(); i++){
+            count += streamSummary.baseSummaryLayer.get(i).eventCountMap.getOrDefault(eventIds.get(0), 0);
         }
+        if(count!=streamSummary.eventTotalCountMap.getOrDefault(eventIds.get(0), 0))
+            System.out.println("countEvent from eventTotalCountMap: " + streamSummary.eventTotalCountMap.getOrDefault(eventIds.get(0), 0));
         return count;
     }
 
@@ -47,7 +49,7 @@ public class QueryAnswering {
         // create composed sketches from subSketchesList
         StreamSummary temporaryStreamSummary = streamSummary;
         Collections.sort(blockWindows, Collections.reverseOrder());
-        temporaryStreamSummary.composeSketches(blockWindows);
+        temporaryStreamSummary.legacyComposeSketches(blockWindows);
         // get the upper bound one by one through the layers
         Map<List<Integer>, Map<Integer, Integer>> patternMapsPerLayer = new HashMap<>();
         Set<List<Integer>> patterns = generateSequentialPatterns(temporaryStreamSummary.eventTotalCountMap, 2);

@@ -134,7 +134,7 @@ public class HelperFunctions {
         // create composed sketches from subSketchesList
         StreamSummary temporaryStreamSummary = streamSummary;
         Collections.sort(blockWindows, Collections.reverseOrder());
-        temporaryStreamSummary.composeSketches(blockWindows);
+        temporaryStreamSummary.legacyComposeSketches(blockWindows);
         return temporaryStreamSummary;
     }
     public static PriorityQueue<Map.Entry<List<Integer>, Integer>> topKWithoutSequentialGeneration(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {

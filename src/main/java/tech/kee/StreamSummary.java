@@ -29,14 +29,25 @@ public class StreamSummary {
      * @param event the event to add.
      */
     void addEvent(Event event) {
-        Sketch currentSketch = baseSummaryLayer.isEmpty()
-                ? new Sketch(event.timestamp(), event.timestamp().plus(resolutionSeconds, ChronoUnit.SECONDS))
-                : baseSummaryLayer.get(baseSummaryLayer.size() - 1);
+        if(baseSummaryLayer.isEmpty()){
+            Sketch sketch = new Sketch(
+                    event.timestamp(), event.timestamp().plus(resolutionSeconds, ChronoUnit.SECONDS));
+            baseSummaryLayer.add(sketch);
+        }
+        Sketch currentSketch = baseSummaryLayer.get(baseSummaryLayer.size() - 1);
         if (currentSketch.isWithinTimeRange(event)) {
             currentSketch.addEvent(event);
         } else {
-            Sketch newSketch = new Sketch(
-                    currentSketch.endTimestamp, currentSketch.endTimestamp.plus(resolutionSeconds, ChronoUnit.SECONDS));
+            Sketch newSketch=null;
+            while(!currentSketch.isWithinTimeRange(event)){
+                newSketch = new Sketch(
+                        currentSketch.endTimestamp, currentSketch.endTimestamp.plus(resolutionSeconds, ChronoUnit.SECONDS));
+                if(newSketch.isWithinTimeRange(event)){
+                    break;
+                }
+                baseSummaryLayer.add(newSketch);
+                currentSketch = newSketch;
+            }
             newSketch.addEvent(event);
             baseSummaryLayer.add(newSketch);
         }
@@ -63,8 +74,8 @@ public class StreamSummary {
     }
 
     void addEvents(List<Event> events) {
-//        events.forEach(this::addEvent);
-        this.legacyAddEvents(events);
+        events.forEach(this::addEvent);
+//        this.legacyAddEvents(events);
     }
 
     /**
@@ -90,7 +101,7 @@ public class StreamSummary {
         return summaryLayers.build();
     }
 
-    public void composeSketches(List<Integer> blockWindows) {
+    public void legacyComposeSketches(List<Integer> blockWindows) {
         // create layerSketch for each blockWindow, and group(concatenate) blockWindow number of the subsketches from
         // the previous blockwindow
         for (int i : blockWindows) {
