@@ -16,7 +16,6 @@ public class TopKHelpers {
         List<Integer> sortedEventList = sortedEventList_orig.subList(0, 100);
 //        List<Integer> sortedEventList = sortedEventList_orig;
         Set<List<Integer>> eventPatterns = new HashSet<>((int) pow(sortedEventList.size(),numberOfEventsPerPattern));
-//        Set<List<Integer>> patterns = new HashSet<>((int) pow(sortedEventList.size(),numberOfEventsPerPattern));
         // creating the first partial combination
         List<Integer> partialCombination;
         List<Integer> combination;

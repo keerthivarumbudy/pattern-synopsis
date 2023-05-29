@@ -26,8 +26,8 @@ public class Main {
                     10);
             streamSummary.addEvents(events);
             // query answering
-//            int count = QueryAnswering.answerCount(List.of(1005115,1004856,1004767), List.of(600, 600), streamSummary);
-//            System.out.println(count);
+            int count = QueryAnswering.answerCount(List.of(1005115,1004856), List.of(600), streamSummary);
+            System.out.println(count);
 //            int count_event = QueryAnswering.countEvent(List.of(1004856), List.of(6000), streamSummary);
 //            System.out.println("count_event "+count_event);
 //            QueryAnswering.upperBoundExperiments( List.of(6000, 600), sketch);

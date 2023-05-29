@@ -54,28 +54,9 @@ public class StreamSummary {
         eventTotalCountMap.put(event.id(), eventTotalCountMap.getOrDefault(event.id(), 0) + 1);
     }
 
-    void legacyAddEvents(List<Event> events) {
-        Sketch sketch = new Sketch(
-                events.get(0).timestamp(), events.get(0).timestamp().plus(resolutionSeconds, ChronoUnit.SECONDS));
-        layerSketchList.add(new ArrayList<>());
-        layerSketchList.get(0).add(sketch);
-        Sketch currentSketch = sketch;
-        for (Event event : events) {
-            if ((event.timestamp().isAfter(currentSketch.endTimestamp))) {
-                Sketch newSketch = new Sketch(
-                        currentSketch.endTimestamp,
-                        currentSketch.endTimestamp.plus(resolutionSeconds, ChronoUnit.SECONDS));
-                layerSketchList.get(0).add(newSketch);
-                currentSketch = newSketch;
-            }
-            currentSketch.eventCountMap.merge(event.id(), 1, Integer::sum);
-            eventTotalCountMap.merge(event.id(), 1, Integer::sum);
-        }
-    }
 
     void addEvents(List<Event> events) {
         events.forEach(this::addEvent);
-//        this.legacyAddEvents(events);
     }
 
     /**
@@ -109,49 +90,5 @@ public class StreamSummary {
         return summaryLayers.build();
     }
 
-    public void legacyComposeSketches(List<Integer> blockWindows) {
-        // create layerSketch for each blockWindow, and group(concatenate) blockWindow number of the subsketches from
-        // the previous blockwindow
-        for (int i : blockWindows) {
-            // get the index of the previous layerSketch
-            int prevBlockIdx = this.layerSketchList.size() - 1;
-            this.layerSketchList.add(new ArrayList<>());
-            for (int j = 0; j < this.layerSketchList.get(prevBlockIdx).size(); j += i) {
 
-                Sketch sketch = new Sketch(
-                        this.layerSketchList.get(prevBlockIdx).get(j).startTimestamp,
-                        j + i < this.layerSketchList.get(prevBlockIdx).size()
-                                ? this.layerSketchList.get(prevBlockIdx).get(j + i - 1).endTimestamp
-                                : this.layerSketchList
-                                        .get(prevBlockIdx)
-                                        .get(this.layerSketchList
-                                                        .get(prevBlockIdx)
-                                                        .size()
-                                                - 1)
-                                        .endTimestamp);
-
-                try {
-                    for (int k = j; k < j + i; k++) {
-                        for (Integer eventId : this.layerSketchList
-                                .get(prevBlockIdx)
-                                .get(k)
-                                .eventCountMap
-                                .keySet()) {
-                            sketch.eventCountMap.put(
-                                    eventId,
-                                    sketch.eventCountMap.getOrDefault(eventId, 0)
-                                            + this.layerSketchList
-                                                    .get(prevBlockIdx)
-                                                    .get(k)
-                                                    .eventCountMap
-                                                    .get(eventId));
-                        }
-                    }
-                } catch (Exception e) {
-
-                }
-                this.layerSketchList.get(prevBlockIdx + 1).add(sketch);
-            }
-        }
-    }
 }

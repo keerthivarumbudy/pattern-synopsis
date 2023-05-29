@@ -40,21 +40,7 @@ public final class Utils {
         return sortedEvents;
     }
 
-    public static int forLoopThroughSketch(int i, List<Integer> numBlocks, List<Sketch> layerSketches, List<String> event_ids, int count1, int eventIdx, int count){
-        if(eventIdx == event_ids.size()) {
-            return count1;
-        }
-        for (int j = i; j < min(i + numBlocks.get(eventIdx-1), layerSketches.size()); j++) {
-            int count2 = layerSketches.get(j).eventCountMap.getOrDefault(event_ids.get(eventIdx), 0);
-            if(count2 <= 0)
-                continue;
-            if(count<0)
-                System.out.println("count is negative "+ count);
-            count+=  forLoopThroughSketch(j, numBlocks, layerSketches, event_ids, count1*count2, eventIdx + 1, count);
-        }
 
-        return count;
-    }
 
     public static void writeListToFile(Set<List<Integer>> stringList) throws IOException {
         FileWriter fileWriter = new FileWriter("output.txt");
