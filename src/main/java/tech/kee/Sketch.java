@@ -15,6 +15,7 @@ public class Sketch {
     Instant startTimestamp;
     Instant endTimestamp;
     EventMapping eventCountMap;
+//    CountMinSketch eventCountMap;
 
 
     public Sketch(Instant startTimestamp, Instant endTimestamp) {

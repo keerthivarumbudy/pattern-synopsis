@@ -1,5 +1,6 @@
 package tech.kee;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -42,11 +43,30 @@ public final class Utils {
 
 
 
-    public static void writeListToFile(Set<List<Integer>> stringList) throws IOException {
-        FileWriter fileWriter = new FileWriter("output.txt");
+    public static void writeListToFile(Set<List<Integer>> stringList, String filename) throws IOException {
+        FileWriter fileWriter = new FileWriter(filename+".txt");
         for (List<Integer> str : stringList) {
             fileWriter.write(str + System.lineSeparator());
         }
+        fileWriter.close();
+    }
+    public static void writeResultsToFile(List<String> header,List<Integer> results, String filename) throws IOException {
+        // check if file exists
+        File f = new File(filename+".txt");
+        if(!f.exists() ) {
+            // do something
+            FileWriter fileWriter = new FileWriter(filename+".txt");
+            for (String str : header) {
+                fileWriter.write(str + " ");
+            }
+            fileWriter.write(System.lineSeparator());
+            fileWriter.close();
+        }
+        FileWriter fileWriter = new FileWriter(filename+".txt", true);
+        for (int result : results) {
+            fileWriter.write(result  + " ");
+        }
+        fileWriter.write(System.lineSeparator());
         fileWriter.close();
     }
     static Map<List<Integer>, Integer> sortByValue(Map<List<Integer>, Integer> topKPatternsMap) {

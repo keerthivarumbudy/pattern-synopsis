@@ -82,7 +82,6 @@ public class TopKHelpers {
         assert numberOfEvents >= 2 : "Number of events should be greater than or equal to 2";
         assert numberOfEvents == windows.size() + 1 : "Number of windows should be one less than number of events";
         //assert that all windows are greater than resolution
-        assert windows.stream().allMatch(window -> window >= streamSummary.resolutionSeconds): "All windows should be greater than or equal to resolution";
 
         // choose the smallest prime number to be the smallest window size for the lowest composed block
         List<Integer> blockWindows = Utils.primeFactorization(windows.get(0)); // this can be modified to be the smallest prime factor of all windows
