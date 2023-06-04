@@ -16,7 +16,7 @@ public class DataPreprocessing{
          time = time.replace(" UTC", "");
          return java.sql.Timestamp.valueOf(time).toInstant();
      }
-     public static List<Event> readFromCsvAndReturnEventsList(String filePath, int timeIdx, int eventIdx, int numTransactions) throws IOException {
+     public static List<Event> readFromCsvAndReturnEventsList(String filePath, int eventIdx, int numTransactions) throws IOException {
          File file = new File(filePath);
          List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
          List<Event> eventsList = new ArrayList<>();
@@ -24,9 +24,9 @@ public class DataPreprocessing{
              numTransactions = lines.size()-1;
          }
          // because first line is header
-         for (String line : lines.subList(1, numTransactions)) {
-             String[] array = line.split(",");
-             Event event = new Event(Integer.valueOf(array[eventIdx]), fixTimeFormat(array[timeIdx]));
+         for (int i = 1; i < numTransactions; i++) {
+             String[] array = lines.get(i).split(",");
+             Event event = new Event(Integer.valueOf(array[eventIdx]), i-1);
              eventsList.add(event);
          }
          return eventsList;

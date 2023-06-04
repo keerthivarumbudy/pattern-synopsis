@@ -11,14 +11,14 @@ import java.util.List;
 import java.util.Map;
 
 public class StreamSummary {
-    final int resolutionSeconds;
+    final int resolutionEvents;
 
     List<Sketch> baseSummaryLayer;
     List<List<Sketch>> layerSketchList;
     Map<Integer, Integer> eventTotalCountMap;
 
-    public StreamSummary(int resolutionSeconds) {
-        this.resolutionSeconds = resolutionSeconds;
+    public StreamSummary(int resolutionEvents) {
+        this.resolutionEvents = resolutionEvents;
         this.baseSummaryLayer = new ArrayList<>();
         this.layerSketchList = new ArrayList<>();
         this.eventTotalCountMap = new HashMap<>();
@@ -31,18 +31,18 @@ public class StreamSummary {
     void addEvent(Event event) {
         if(baseSummaryLayer.isEmpty()){
             Sketch sketch = new Sketch(
-                    event.timestamp(), event.timestamp().plus(resolutionSeconds, ChronoUnit.SECONDS));
+                    event.order(), event.order() + resolutionEvents);
             baseSummaryLayer.add(sketch);
         }
         Sketch currentSketch = baseSummaryLayer.get(baseSummaryLayer.size() - 1);
-        if (currentSketch.isWithinTimeRange(event)) {
+        if (currentSketch.isWithinOrderRange(event)) {
             currentSketch.addEvent(event);
         } else {
             Sketch newSketch=null;
-            while(!currentSketch.isWithinTimeRange(event)){
+            while(!currentSketch.isWithinOrderRange(event)){
                 newSketch = new Sketch(
-                        currentSketch.endTimestamp, currentSketch.endTimestamp.plus(resolutionSeconds, ChronoUnit.SECONDS));
-                if(newSketch.isWithinTimeRange(event)){
+                        currentSketch.endOrder, currentSketch.endOrder + resolutionEvents);
+                if(newSketch.isWithinOrderRange(event)){
                     break;
                 }
                 baseSummaryLayer.add(newSketch);
@@ -72,7 +72,8 @@ public class StreamSummary {
         for (int mergeFactor : mergingFactors) {
             ImmutableList.Builder<Sketch> nextLayer = ImmutableList.builder();
             for (int start = 0; start < currentLayer.size(); start += mergeFactor) {
-                nextLayer.add(currentLayer.subList(start, Math.min(start + mergeFactor, currentLayer.size())).stream()
+                var sketchesToMerge = currentLayer.subList(start, Math.min(start + mergeFactor, currentLayer.size()));
+                nextLayer.add(sketchesToMerge.stream()
                         .reduce(Sketch::merge)
                         .orElseThrow());
             }

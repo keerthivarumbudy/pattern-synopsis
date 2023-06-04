@@ -13,10 +13,10 @@ public class QueryAnswering {
         assert eventIds.size() >= 2;
         assert eventIds.size() == windows.size() + 1;
         // assert that all windows are greater than resolution
-        assert windows.stream().allMatch(window -> window >= streamSummary.resolutionSeconds);
+        assert windows.stream().allMatch(window -> window >= streamSummary.resolutionEvents);
         // divide all the windows by resolution
         windows = windows.stream()
-                .map(window -> window / streamSummary.resolutionSeconds)
+                .map(window -> window / streamSummary.resolutionEvents)
                 .toList();
         return countPattern(eventIds, windows, streamSummary.baseSummaryLayer);
     }
@@ -24,7 +24,7 @@ public class QueryAnswering {
     public static Map<List<Integer>, Integer> answerTopK(
             Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
         windows = windows.stream()
-                .map(window -> window / streamSummary.resolutionSeconds)
+                .map(window -> window / streamSummary.resolutionEvents)
                 .toList();
 
         PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns =
