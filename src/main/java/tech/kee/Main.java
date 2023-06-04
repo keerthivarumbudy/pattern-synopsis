@@ -27,7 +27,7 @@ public class Main {
         if(events.size() != 0){
             // create sketch
             StreamSummary streamSummary = new StreamSummary(
-                    10);
+                    1);
             streamSummary.addEvents(events);
             // query answering
             long startTime1 = System.nanoTime();
@@ -62,6 +62,7 @@ public class Main {
             System.out.println("Time taken for topKWithSequentialGeneration: " + (endTimeTopK - startTimeTopK)/1000000 + "ms");
             for(List<Integer> pattern: topKPatterns.keySet())
                 System.out.println(pattern+" "+ topKPatterns.get(pattern));
+            new WaitClass().waitUntilInterrupt();
         }
 
     }

@@ -19,7 +19,11 @@ public class CountingHelpers {
             if(count1 <= 0)
                 continue;
             for (int j = i; j < min(i + numBlocks.get(0), baseLayer.size()); j++) {
-                int count2 = baseLayer.get(j).eventCountMap.estimateCount(eventIds.get(1));
+                int count2 = 0;
+                if(eventIds.get(0).equals(eventIds.get(1)) && i==j)
+                    count2 = baseLayer.get(j).eventCountMap.estimateCount(eventIds.get(1)) - 1;
+                else
+                    count2 = baseLayer.get(j).eventCountMap.estimateCount(eventIds.get(1));
                 count += count1 * count2;
             }
         }
@@ -33,7 +37,11 @@ public class CountingHelpers {
             if(count1 <= 0)
                 continue;
             for (int j = i; j < min(i + numBlocks.get(0), layerSketches.size()); j++) {
-                int count2 = layerSketches.get(j).eventCountMap.estimateCount(eventIds.get(1));
+                int count2 = 0;
+                if(eventIds.get(0).equals(eventIds.get(1)) && i==j)
+                    count2 = layerSketches.get(j).eventCountMap.estimateCount(eventIds.get(1)) - 1;
+                else
+                    count2 = layerSketches.get(j).eventCountMap.estimateCount(eventIds.get(1));
                 if(count2 <= 0)
                     continue;
                 int count3 = 0;
