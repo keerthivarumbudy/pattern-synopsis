@@ -36,6 +36,35 @@ public class QueryAnswering {
         topKPatternsMap = sortByValue(topKPatternsMap);
         return topKPatternsMap;
     }
+    public static Map<List<Integer>, Integer> answerBaseLayerTopK(
+            Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
+        windows = windows.stream()
+                .map(window -> window / streamSummary.resolutionEvents)
+                .toList();
+
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = getTopKNaive(numberOfEvents, windows, streamSummary, k);
+        Map<List<Integer>, Integer> topKPatternsMap = new HashMap<>();
+        for (Map.Entry<List<Integer>, Integer> entry : topKPatterns)
+            topKPatternsMap.put(entry.getKey(), entry.getValue());
+        // sort the map by value
+        topKPatternsMap = sortByValue(topKPatternsMap);
+        return topKPatternsMap;
+    }
+    public static Map<List<Integer>, Integer> answerNonSequentialTopK(
+            Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
+        windows = windows.stream()
+                .map(window -> window / streamSummary.resolutionEvents)
+                .toList();
+
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns =
+                topKWithoutSequentialGeneration(numberOfEvents, windows, streamSummary, k);
+        Map<List<Integer>, Integer> topKPatternsMap = new HashMap<>();
+        for (Map.Entry<List<Integer>, Integer> entry : topKPatterns)
+            topKPatternsMap.put(entry.getKey(), entry.getValue());
+        // sort the map by value
+        topKPatternsMap = sortByValue(topKPatternsMap);
+        return topKPatternsMap;
+    }
 
     public static int countEvent(List<Integer> eventIds, List<Integer> windows, StreamSummary streamSummary) {
         int count = 0;
