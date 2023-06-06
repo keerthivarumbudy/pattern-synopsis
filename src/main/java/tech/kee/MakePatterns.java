@@ -7,8 +7,10 @@ import static java.lang.Math.min;
 public class MakePatterns {
 
     public static List<Integer> getNextPartialCombination(List<Integer> partialComboIdx, List<Integer> lastPossiblePartialComboIdx, List<Integer> sortedEventList){
-        if(partialComboIdx.containsAll(lastPossiblePartialComboIdx) == true){
+        if(partialComboIdx.containsAll(lastPossiblePartialComboIdx) == true || partialComboIdx.stream().allMatch(i -> i>lastPossiblePartialComboIdx.get(0))){
             return null;
+        }if(lastPossiblePartialComboIdx.stream().allMatch(i -> i == 0)){
+            System.out.println("lastPossiblePartialComboIdx is all 0");
         }
         // get the index of minimum value in the list
         Integer minVal = partialComboIdx.stream().min(Comparator.comparing(Integer::valueOf)).get();

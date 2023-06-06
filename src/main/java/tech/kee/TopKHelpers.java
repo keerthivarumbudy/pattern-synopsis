@@ -242,7 +242,8 @@ public class TopKHelpers {
             if (pruned) {
                 int maxIdx = partialComboIdx.stream().max(Integer::compareTo).get();
                 int removeFromIdx = max(maxIdx, lastAddedEventIdx);
-                sortedEventList.removeAll(sortedEventList.subList(removeFromIdx + 1, sortedEventList.size()));
+                if(removeFromIdx < sortedEventList.size() - 1)
+                    sortedEventList.removeAll(sortedEventList.subList(removeFromIdx + 1, sortedEventList.size()));
                 lastPossiblePartialComboIdx = new ArrayList<Integer>() {{
                     for (int i = 0; i < numEventsPerPattern - 1; i++) {
                         add(sortedEventList.size() - 1);

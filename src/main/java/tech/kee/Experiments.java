@@ -69,7 +69,7 @@ public class Experiments {
     }
 
     public static void countingExperiment(List<Event> events, int numOfRows, int resolution) {
-        String filename = "count_cm_with_cm_sketch_2events";
+        String filename = "count_2events";
         StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);
             // query answering
             long startTime1 = System.nanoTime();

@@ -64,7 +64,7 @@ public class Main {
 //                System.out.println(pattern+" "+ topKPatterns.get(pattern));
             List<Event> events = null;
 
-            String filePath = "data/2019-oct-10m.csv";
+            String filePath = "/Users/keerthivarumbudy/Downloads/archive (1)/2019-oct-10m.csv";
             try {
                 events = DataPreprocessing.readFromCsvAndReturnEventsList(filePath, 2, -1);
 
@@ -72,16 +72,16 @@ public class Main {
                 e.printStackTrace();
             }
             Experiments experiments = new Experiments();
-            System.out.println("Start count experiment");
-            //print counting header
-            for (String str : experiments.countingHeader) {
-                System.out.print(str + " ");
-            }System.out.println();
-            for(int i=500000; i<10000000; i+=500000){
-                experiments.countingExperiment(events,i,10);
-            }System.out.println();
-            System.out.println("End count experiment");
-        System.out.println("---------------------------------------------");
+//            System.out.println("Start count experiment");
+//            //print counting header
+//            for (String str : experiments.countingHeader) {
+//                System.out.print(str + " ");
+//            }System.out.println();
+//            for(int i=500000; i<10000000; i+=500000){
+//                experiments.countingExperiment(events,i,100);
+//            }System.out.println();
+//            System.out.println("End count experiment");
+//        System.out.println("---------------------------------------------");
 
 //            System.out.println("Start topK with base layer experiment");
 //            for (String str : experiments.topKHeader) {
@@ -94,14 +94,14 @@ public class Main {
 //            System.out.println("---------------------------------------------");
 
 
-            System.out.println("Start topK without sequential generation experiment");
-            for (String str : experiments.topKHeader) {
-                System.out.print(str + " ");
-            }System.out.println();
-            for(int i=5000; i<50000; i+=5000){
-                experiments.nonSequentialtopKExperiments(events,i,10,10);
-            }
-            System.out.println("End topK without sequential generation experiment");
+//            System.out.println("Start topK without sequential generation experiment");
+//            for (String str : experiments.topKHeader) {
+//                System.out.print(str + " ");
+//            }System.out.println();
+//            for(int i=5000; i<50000; i+=5000){
+//                experiments.nonSequentialtopKExperiments(events,i,10,10);
+//            }
+//            System.out.println("End topK without sequential generation experiment");
         System.out.println("---------------------------------------------");
 
             System.out.println("Start topK with sequential generation experiment");
@@ -109,7 +109,7 @@ public class Main {
                 System.out.print(str + " ");
             }System.out.println();
             for(int i=5000; i<50000; i+=5000){
-                experiments.topKExperiments(events,i,10,10);
+                experiments.topKExperiments(events,i,1,10);
             }
             System.out.println("End topK with sequential generation experiment");
         System.out.println("---------------------------------------------");
