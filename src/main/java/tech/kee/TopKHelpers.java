@@ -279,10 +279,12 @@ public class TopKHelpers {
     public static PriorityQueue<Map.Entry<List<Integer>, Integer>> getTopKNaive(Integer numEventsPerPattern, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
         Set<List<Integer>> patterns = generateSequentialPatterns(streamSummary.eventTotalCountMap, numEventsPerPattern);
         PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = new PriorityQueue<>(k, Map.Entry.comparingByValue());
+        Map<List<Integer>, Integer> patternMap = new HashMap<>();
         for (List<Integer> pattern : patterns) {
             int count = countPattern(pattern, windows, streamSummary.baseSummaryLayer);
-            topKPatterns.add(Map.entry(pattern, count));
+            patternMap.put(pattern, count);
         }
+        topKPatterns = getTopKPatternsFromCount(patternMap, k);
         return topKPatterns;
     }
 

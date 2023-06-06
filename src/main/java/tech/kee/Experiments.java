@@ -73,6 +73,8 @@ public class Experiments {
         StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);
             // query answering
             long startTime1 = System.nanoTime();
+            System.out.println("Count: " + QueryAnswering.countEvent(1004856, streamSummary));
+            System.out.println("Count: " + QueryAnswering.countEvent(1005115, streamSummary));
             int count = QueryAnswering.answerCount(List.of(1004856, 1005115), List.of(500), streamSummary);
             long endTime1 = System.nanoTime();
             Integer[] results = {numOfRows, resolution, (int) ((endTime1 - startTime1) / 1000000), count};

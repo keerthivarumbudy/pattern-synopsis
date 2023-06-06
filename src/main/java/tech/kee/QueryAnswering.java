@@ -66,14 +66,11 @@ public class QueryAnswering {
         return topKPatternsMap;
     }
 
-    public static int countEvent(List<Integer> eventIds, List<Integer> windows, StreamSummary streamSummary) {
+    public static int countEvent(Integer eventId, StreamSummary streamSummary) {
         int count = 0;
         for (int i = 0; i < streamSummary.baseSummaryLayer.size(); i++) {
-            count += streamSummary.baseSummaryLayer.get(i).eventCountMap.estimateCount(eventIds.get(0));
+            count += streamSummary.baseSummaryLayer.get(i).eventCountMap.estimateCount(eventId);
         }
-        if (count != streamSummary.eventTotalCountMap.getOrDefault(eventIds.get(0), 0))
-            System.out.println("countEvent from eventTotalCountMap: "
-                    + streamSummary.eventTotalCountMap.getOrDefault(eventIds.get(0), 0));
         return count;
     }
 
