@@ -1,5 +1,8 @@
 package tech.kee;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -74,5 +77,17 @@ public class QueryAnswering {
         return count;
     }
 
+    public static void testingUpperBounds(List<Integer> eventIds, List<Integer> windows, StreamSummary streamSummary){
+        windows = windows.stream()
+                    .map(window -> window / streamSummary.resolutionEvents)
+                    .toList();
+        ImmutableMap<Integer, ImmutableList<Sketch>> layerSketches = transformParameterForTopK(2, windows, streamSummary,10);
+        for(int i = 0; i < layerSketches.size(); i++){
+           System.out.println("Layer " + i + " sketches: ");
+           int count = countPattern2(eventIds, windows, layerSketches.get(i));
+           System.out.println("Count: " + count);
+        }
+
+    }
 
 }

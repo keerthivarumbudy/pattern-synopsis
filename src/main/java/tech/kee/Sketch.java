@@ -1,5 +1,6 @@
 package tech.kee;
 
+import tech.kee.CountMin.CountMinSketch;
 import tech.kee.model.Event;
 import tech.kee.model.EventMapping;
 
@@ -18,7 +19,7 @@ public class Sketch {
     public Sketch(Integer startOrder, Integer endOrder) {
         this.startOrder = startOrder;
         this.endOrder = endOrder;
-//        this.eventCountMap = new CountMinSketch(100, 5); // might want to control this with error and probability
+//        this.eventCountMap = new CountMinSketch(200, 7); // error = 0.01 and probability = 1 - 0.01
         this.eventCountMap = new EventMapping();
     }
 
@@ -36,6 +37,7 @@ public class Sketch {
         Sketch mergedSketch = new Sketch(
                 min(this.startOrder, toMerge.startOrder), max(this.endOrder, toMerge.endOrder));
         mergedSketch.eventCountMap = new EventMapping().merge(this.eventCountMap).merge(toMerge.eventCountMap);
+//        mergedSketch.eventCountMap = new CountMinSketch(this.eventCountMap.width, this.eventCountMap.depth).merge(this.eventCountMap).merge(toMerge.eventCountMap);
         return mergedSketch;
     }
 

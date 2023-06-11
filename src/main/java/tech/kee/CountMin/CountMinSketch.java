@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CountMinSketch {
-    private int width;
-    private int depth;
+    public int width;
+    public int depth;
     private int[][] sketch;
+    public double error;
+    public double probability;
 
     public CountMinSketch(int width, int depth) {
         this.width = width;

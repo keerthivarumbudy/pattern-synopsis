@@ -41,6 +41,20 @@ public final class Utils {
         return sortedEvents;
     }
 
+    public static List<Integer> getSortedEventsFromSketch(Set<Integer> events, Sketch sketch){
+        // in descending order
+        List<Integer> sortedEvents = new ArrayList<>();
+        Map<Integer, Integer> sortedMap = new LinkedHashMap<>();
+        for(Integer event : events){
+            sortedMap.put(event, sketch.eventCountMap.estimateCount(event));
+        }
+        sortedMap.entrySet()
+                .stream()
+                .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
+                .forEachOrdered(x -> sortedEvents.add(x.getKey()));
+        return sortedEvents;
+    }
+
 
 
     public static void writeListToFile(Set<List<Integer>> stringList, String filename) throws IOException {

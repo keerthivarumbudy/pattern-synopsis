@@ -2,6 +2,7 @@ package tech.kee;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import tech.kee.model.EventMapping;
 
 import java.io.IOException;
 import java.util.*;
@@ -174,8 +175,8 @@ public class TopKHelpers {
     public static PriorityQueue<Map.Entry<List<Integer>, Integer>> topKWithSequentialGeneration(Integer numEventsPerPattern, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
         // transform the parameters to be used for topK
         ImmutableMap<Integer, ImmutableList<Sketch>> layerSketches = transformParameterForTopK(numEventsPerPattern, windows, streamSummary, k);
+        List<Integer> sortedEventList = Utils.getSortedEventsFromSketch(streamSummary.eventTotalCountMap.keySet(),layerSketches.get(layerSketches.size()-1).get(0));
 
-        List<Integer> sortedEventList = Utils.getSortedEvents(streamSummary.eventTotalCountMap);
         // creating the first partial combination
         List<Integer> partialCombination;
         List<Integer> combination;
@@ -201,6 +202,10 @@ public class TopKHelpers {
         List<Integer> sortedEventListCopy = new ArrayList<Integer>(sortedEventList);
         Map<List<Integer>, Integer> patternMap = new HashMap<>();
             // while we do not reach the end of possible combinations
+        // Issue with CM-Sketch is due to the fact that the sorted event list is made on the basis of eventTotalCountMap from the stream summary
+        // which has the correct count of the event, whereas the upperbound of the event is calculated using the sketch
+        // therefore, events with low count, which would either have been ignored, will get a higher count in the CM Sketch
+        // due to the overestimation/collisions in CM Sketch
         while (partialComboIdx != null) {
             Integer lastAddedEventIdx = -1;
             Boolean pruned = false;
