@@ -89,13 +89,13 @@ public class Main {
             Experiments experiments = new Experiments();
 //                    System.out.println("Start count experiment");
                     //print counting header
-//                    for (String str : experiments.countingHeader) {
-//                        System.out.print(str + " ");
-//                    }System.out.println();
+                    for (String str : experiments.countingHeader) {
+                        System.out.print(str + " ");
+                    }System.out.println();
 //                for (int j =0; j<3; j++){
-                    for (int i = 500000; i < 10000000; i += 500000) {
-                        experiments.countingExperiment(events, i, 100);
-                    }
+//                    for (int i = 500000; i < 10000000; i += 500000) {
+//                        experiments.countingExperiment(events, i, 100);
+//                    }
 //                    System.out.println();
 //                }
 //                for (int j =0; j<3; j++){
@@ -141,6 +141,8 @@ public class Main {
 //                experiments.topKExperiments(events, i, 10, 10);
 //            }
 //        }
+
+
         System.out.println();
         System.out.println("---------------------------------------------");
             new WaitClass().waitUntilInterrupt();

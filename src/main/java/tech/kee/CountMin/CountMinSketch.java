@@ -2,13 +2,12 @@ package tech.kee.CountMin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class CountMinSketch {
     public int width;
     public int depth;
     private int[][] sketch;
-    public double error;
-    public double probability;
 
     public CountMinSketch(int width, int depth) {
         this.width = width;
@@ -17,24 +16,27 @@ public class CountMinSketch {
     }
 
     public void add(Integer key) {
+        int[] hashes = hash(key);
         for (int i = 0; i < depth; i++) {
-            int hash = hash(key, i);
-            sketch[i][hash]++;
+            sketch[i][hashes[i]]++;
         }
     }
 
     public int estimateCount(Integer key) {
         int minCount = Integer.MAX_VALUE;
+        int[] hashes = hash(key);
         for (int i = 0; i < depth; i++) {
-            int hash = hash(key, i);
-            minCount = Math.min(minCount, sketch[i][hash]);
+            minCount = Math.min(minCount, sketch[i][hashes[i]]);
         }
         return minCount;
     }
 
-    private int hash(Integer key, int i) {
-        // Simple hash function using key and i (depth index)
-        return (key.hashCode() + i) % width;
+    private int[] hash(Integer attrValue) {
+        Random rn = new Random();
+        int[] hash = new int[depth];
+        rn.setSeed(attrValue);
+        for (int i = 0; i < depth; i++) hash[i] = rn.nextInt(width);
+        return hash;
     }
     public CountMinSketch merge(CountMinSketch toMerge) {
 

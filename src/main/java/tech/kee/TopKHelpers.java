@@ -117,7 +117,7 @@ public class TopKHelpers {
                 List<Integer> pattern = pq.poll().getKey();
                 if (topKPatterns.contains(pattern))
                     continue;
-                int bestValue = countPattern(pattern, windows, layerSketches.get(0));
+                int bestValue = countPattern(pattern, windows, layerSketches.get(i-1));
                 topKPatterns.add(Map.entry(pattern, bestValue));
             }
 

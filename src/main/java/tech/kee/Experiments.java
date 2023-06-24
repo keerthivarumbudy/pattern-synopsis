@@ -74,7 +74,7 @@ public class Experiments {
         StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);
             // query answering
             long startTime1 = System.nanoTime();
-            int count = QueryAnswering.answerCount(List.of(1004856, 1005115), List.of(5000), streamSummary);
+            int count = QueryAnswering.answerCount(List.of(1004856, 1005115), List.of(500), streamSummary);
             long endTime1 = System.nanoTime();
             Integer[] results = {numOfRows, resolution, (int) ((endTime1 - startTime1) / 1000000), count};
             printAndStoreResults(countingHeader, results, filename);
@@ -83,7 +83,7 @@ public class Experiments {
         if (events.size() != 0) {
             // create sketch
             StreamSummary streamSummary = new StreamSummary(resolution);
-            streamSummary.addEvents(events.subList(0, numOfRows));
+            streamSummary.addEvents(events.subList(0, numOfRows-1));
             return streamSummary;
         }
         System.out.println("No events");
