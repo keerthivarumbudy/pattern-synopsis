@@ -12,15 +12,15 @@ import static com.google.common.collect.Comparators.min;
 public class Sketch {
     Integer startOrder;
     Integer endOrder;
-//    EventMapping eventCountMap;
-    CountMinSketch eventCountMap;
+    EventMapping eventCountMap;
+//    CountMinSketch eventCountMap;
 
 
     public Sketch(Integer startOrder, Integer endOrder) {
         this.startOrder = startOrder;
         this.endOrder = endOrder;
-        this.eventCountMap = new CountMinSketch(200,7); // error = 0.01 and probability = 1 - 0.01
-//        this.eventCountMap = new EventMapping();
+//        this.eventCountMap = new CountMinSketch(20,4); // error = 0.1 and probability = 1 - 0.1
+        this.eventCountMap = new EventMapping();
     }
 
     void addEvent(Event event) {
@@ -36,8 +36,8 @@ public class Sketch {
         checkArgument(isNeighboringSketch(toMerge), "The sketch to merge is not a temporal neighbor of this sketch");
         Sketch mergedSketch = new Sketch(
                 min(this.startOrder, toMerge.startOrder), max(this.endOrder, toMerge.endOrder));
-//        mergedSketch.eventCountMap = new EventMapping().merge(this.eventCountMap).merge(toMerge.eventCountMap);
-        mergedSketch.eventCountMap = new CountMinSketch(this.eventCountMap.width, this.eventCountMap.depth).merge(this.eventCountMap).merge(toMerge.eventCountMap);
+        mergedSketch.eventCountMap = new EventMapping().merge(this.eventCountMap).merge(toMerge.eventCountMap);
+//        mergedSketch.eventCountMap = new CountMinSketch(this.eventCountMap.width, this.eventCountMap.depth).merge(this.eventCountMap).merge(toMerge.eventCountMap);
         return mergedSketch;
     }
 

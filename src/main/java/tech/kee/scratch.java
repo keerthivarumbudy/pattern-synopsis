@@ -10,7 +10,9 @@ public static void main(String[] args) throws IOException {
     List<Event> events = null;
 //
 //     read from csv and perform data preprocessing
-        String filePath = "/Users/keerthivarumbudy/Downloads/archive (1)/2019-oct-10m.csv";
+//        String filePath = "/Users/keerthivarumbudy/Downloads/archive (1)/2019-oct-10m.csv";
+    String filePath = "/Users/keerthivarumbudy/Downloads/archive (1)/2019-oct-1m.csv";
+
 //    String filePath = "/Users/keerthivarumbudy/Desktop/Thesis/results-from-cluster/steepbias-stream-20k-5000window";
 //    String filePath = "/Users/keerthivarumbudy/Desktop/Thesis/results-from-cluster/slightly-less-steepbias-stream-20k";
 //    String filePath = "/Users/keerthivarumbudy/Desktop/Thesis/results-from-cluster/biased-big-stream";
@@ -33,7 +35,8 @@ public static void main(String[] args) throws IOException {
             for (String str : experiments.topKHeader) {
                 System.out.print(str + " ");
             }System.out.println();
-    experiments.topKExperiments(events, 20000, 100, 10);
+            experiments.topKExperiments(events, 10000, 100, 10);
+            experiments.topKNewExperiments(events, 10000, 100, 10);
 
     System.out.println("End topK with sequential generation experiment");
         }

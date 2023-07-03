@@ -21,6 +21,18 @@ public class Experiments {
                 printAndStoreResults(topKHeader, result, filename);
             }
         }
+    public static void topKNewExperiments(List<Event> events, int numOfRows, int resolution, int k) throws IOException {
+        String filename = "topK_2events_new";
+        StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);
+        long startTime1 = System.nanoTime();
+        Map<List<Integer>, Integer> topK = QueryAnswering.answerTopKNew(2, List.of( 5000) , streamSummary, k);
+        long endTime1 = System.nanoTime();
+        for(List<Integer> pattern: topK.keySet()){
+//                System.out.println(pattern.get(0) + " " + pattern.get(1) + " " + topK.get(pattern));
+            Integer[] result = {numOfRows, pattern.get(0), pattern.get(1), resolution, (int) ((endTime1 - startTime1) / 1000000), topK.get(pattern)};
+            printAndStoreResults(topKHeader, result, filename);
+        }
+    }
     public static void baseLayertopKExperiments(List<Event> events, int numOfRows, int resolution, int k) throws IOException {
         String filename = "topK_2events_baseLayer";
         StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);

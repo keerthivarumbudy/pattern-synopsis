@@ -87,7 +87,7 @@ public class Main {
                 e.printStackTrace();
             }
             Experiments experiments = new Experiments();
-//                    System.out.println("Start count experiment");
+                    System.out.println("Start count experiment");
                     //print counting header
                     for (String str : experiments.countingHeader) {
                         System.out.print(str + " ");
@@ -98,14 +98,14 @@ public class Main {
 //                    }
 //                    System.out.println();
 //                }
-//                for (int j =0; j<3; j++){
-//                    for (int i = 500000; i < 10000000; i += 500000) {
-//                        experiments.countingExperiment(events, i, 10);
-//                    }
+                for (int j =0; j<10; j++){
+                    for (int i = 100000; i <= 1000000; i += 100000) {
+                        experiments.countingExperiment(events, i, 100);
+                    }
 //                    System.out.println();
-//                }
-//                    System.out.println("End count experiment");
-//                System.out.println("---------------------------------------------");
+                }
+                    System.out.println("End count experiment");
+                System.out.println("---------------------------------------------");
 //
 //        for (int j = 0; j < 3; j++) {
 //            System.out.println("Start topK with base layer experiment");

@@ -2,6 +2,7 @@ package tech.kee;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import it.unimi.dsi.fastutil.Hash;
 import tech.kee.model.EventMapping;
 
 import java.io.IOException;
@@ -117,7 +118,7 @@ public class TopKHelpers {
                 List<Integer> pattern = pq.poll().getKey();
                 if (topKPatterns.contains(pattern))
                     continue;
-                int bestValue = countPattern(pattern, windows, layerSketches.get(i-1));
+                int bestValue = countPattern(pattern, windows, layerSketches.get(0));
                 topKPatterns.add(Map.entry(pattern, bestValue));
             }
 
@@ -281,6 +282,64 @@ public class TopKHelpers {
         }
         return topKPatterns;
     }
+    public static PriorityQueue<Map.Entry<List<Integer>, Integer>> topKWithNewSortedPatterns(Integer numEventsPerPattern, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
+        ImmutableMap<Integer, ImmutableList<Sketch>> layerSketches = transformParameterForTopK(numEventsPerPattern, windows, streamSummary, k);
+        List<Integer> sortedEventList = Utils.getSortedEventsFromSketch(streamSummary.eventTotalCountMap.keySet(),layerSketches.get(layerSketches.size()-1).get(0));
+        Map<Integer,Integer> combinationIndices = new HashMap<>();
+        Set<Map<Integer,Integer>> combinationsHistory = new HashSet<>((int) pow(sortedEventList.size(),numEventsPerPattern));
+        // assign the first combination to be the numEventsPerPattern times the first element in the sorted event list
+        combinationIndices.put(0,numEventsPerPattern);
+        Map<List<Integer>, Integer> patternMap = new HashMap<>((int) pow(sortedEventList.size(),numEventsPerPattern)); // storing all the patterns and their count estimates
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = null;
+        PriorityQueue<Map.Entry<Map<Integer,Integer>, Integer>> candidates = new PriorityQueue<>(k, (a, b) -> b.getValue() - a.getValue()); // make sure this is storing in descending order
+        int kthBestValue = -1;
+        Map<Integer,Integer> lastPossibleCombinationIndices = new HashMap<>();
+        // assign last combination to be the numEventsPerPattern times the last element in the sorted event list
+        lastPossibleCombinationIndices.put(sortedEventList.size()-1,numEventsPerPattern);
+        while(combinationIndices != null){
+            Set<List<Integer>> patterns = new HashSet<>();
+            // get all the patterns, their estimates and store them in patternMap based on the condition
+            permutePatternsFromCombinations(getPatternFromCombinationIndices(combinationIndices, sortedEventList), new ArrayList<>(), patterns);
+            for (List<Integer> pattern : patterns) {
+                int upperBound = countPattern(pattern, windows, layerSketches.get(layerSketches.size() - 1));
+                if (patternMap.size() > k) {
+                    if (upperBound <= kthBestValue) {
+                        combinationIndices = null;
+                        break;
+                    }
+                    if (kthBestValue == -1) {
+                        // gets activated in the worst resolution layer only
+                        topKPatterns = getTopKPatterns(patternMap, layerSketches, windows, k, topKPatterns);
+                        kthBestValue = topKPatterns.peek().getValue();
+                    }
+                }
+                patternMap.put(pattern, upperBound);
+                }
+            // getting the next combination
+            combinationIndices = getNextCombinationIndices(combinationIndices, lastPossibleCombinationIndices, sortedEventList, windows, candidates, layerSketches.get(layerSketches.size()-1), combinationsHistory);
+        }
+        // now that we have the patternMap, we move to the next layers and prune the patterns
+        for(int l = layerSketches.size()-2; l>=0; l--){
+            Set<List<Integer>> patterns = new HashSet<>(patternMap.keySet());
+            for(List<Integer> pattern: patterns){
+                int upperBound = countPattern(pattern, windows, layerSketches.get(l));
+                if (upperBound <= kthBestValue) {
+                    patternMap.remove(pattern);
+                }else{
+                    patternMap.put(pattern, upperBound);
+                }
+            }
+            // re-adjust topKPatterns
+            topKPatterns = getTopKPatterns(patternMap, layerSketches, windows, k, topKPatterns);
+            kthBestValue = topKPatterns.peek().getValue();
+        }
+        return topKPatterns;
+
+    }
+
+
+
+
     public static PriorityQueue<Map.Entry<List<Integer>, Integer>> getTopKNaive(Integer numEventsPerPattern, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
         Set<List<Integer>> patterns = generateSequentialPatterns(streamSummary.eventTotalCountMap, numEventsPerPattern);
         PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = new PriorityQueue<>(k, Map.Entry.comparingByValue());
