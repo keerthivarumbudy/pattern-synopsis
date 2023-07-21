@@ -9,18 +9,6 @@ import java.util.Map;
 public class Experiments {
     static String[] topKHeader =  {"numOfRows","Event1","Event2" ,"resolution", "timeTaken", "count"};
     static String[] countingHeader = {"numOfRows", "resolution", "timeTaken", "count"};
-    public static void topKExperiments(List<Event> events, int numOfRows, int resolution, int k) throws IOException {
-        String filename = "topK_2events_standard";
-            StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);
-            long startTime1 = System.nanoTime();
-            Map<List<Integer>, Integer> topK = QueryAnswering.answerTopK(2, List.of( 5000) , streamSummary, k);
-            long endTime1 = System.nanoTime();
-            for(List<Integer> pattern: topK.keySet()){
-//                System.out.println(pattern.get(0) + " " + pattern.get(1) + " " + topK.get(pattern));
-                Integer[] result = {numOfRows, pattern.get(0), pattern.get(1), resolution, (int) ((endTime1 - startTime1) / 1000000), topK.get(pattern)};
-                printAndStoreResults(topKHeader, result, filename);
-            }
-        }
     public static void topKNewExperiments(List<Event> events, int numOfRows, int resolution, int k) throws IOException {
         String filename = "topK_2events_new";
         StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);
@@ -37,7 +25,7 @@ public class Experiments {
         String filename = "topK_2events_baseLayer";
         StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);
         long startTime1 = System.nanoTime();
-        Map<List<Integer>, Integer> topK = QueryAnswering.answerBaseLayerTopK(2, List.of(500) , streamSummary, k);
+        Map<List<Integer>, Integer> topK = QueryAnswering.answerBaseLayerTopK(2, List.of(5000) , streamSummary, k);
         long endTime1 = System.nanoTime();
         Integer[] results = {numOfRows, resolution, (int) ((endTime1 - startTime1) / 1000000)};
         for(List<Integer> pattern: topK.keySet()){
@@ -50,7 +38,20 @@ public class Experiments {
         String filename = "topK_2events_baseLayer";
         StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);
         long startTime1 = System.nanoTime();
-        Map<List<Integer>, Integer> topK = QueryAnswering.answerNonSequentialTopK(2, List.of(500) , streamSummary, k);
+        Map<List<Integer>, Integer> topK = QueryAnswering.answerNonSequentialTopK(2, List.of(5000) , streamSummary, k);
+        long endTime1 = System.nanoTime();
+        for(List<Integer> pattern: topK.keySet()){
+            Integer[] result = {numOfRows, pattern.get(0), pattern.get(1), resolution, (int) ((endTime1 - startTime1) / 1000000), topK.get(pattern)};
+            printAndStoreResults(topKHeader, result, filename);
+        }
+    }
+
+    public static void lowerboundTopKExperiments( List<Event> events, int numOfRows, int resolution, int k) throws IOException {
+        String[] header = {"numOfRows", "resolution", "timeTaken"};
+        String filename = "topK_2events_baseLayer";
+        StreamSummary streamSummary = eventsIntoSketch(numOfRows, events, resolution);
+        long startTime1 = System.nanoTime();
+        Map<List<Integer>, Integer> topK = QueryAnswering.answerLowerboundTopkTest(2, List.of(5000) , streamSummary, k);
         long endTime1 = System.nanoTime();
         for(List<Integer> pattern: topK.keySet()){
             Integer[] result = {numOfRows, pattern.get(0), pattern.get(1), resolution, (int) ((endTime1 - startTime1) / 1000000), topK.get(pattern)};
@@ -63,9 +64,9 @@ public class Experiments {
         List<Event> events = null;
 
         // read from csv and perform data preprocessing
-        String filePath = "data/2019-oct-10m.csv";
+        String filePath = "/Users/keerthivarumbudy/Downloads/archive (1)/2019-oct-10m.csv";
         try {
-            events = DataPreprocessing.readFromCsvAndReturnEventsList(filePath, 0, numOfRows );
+            events = DataPreprocessing.readFromCsvAndReturnEventsList(filePath, 2, numOfRows );
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -78,7 +79,7 @@ public class Experiments {
         System.out.println("Time taken to insert into sketch: " + (endTime - startTime) / 1000000 + " ms");
         Integer[] results = {numOfRows, resolution, (int) ((endTime - startTime) / 1000000)};
 
-//        Utils.writeResultsToFile(List.of(header), List.of(results), filename);
+        Utils.writeResultsToFile(List.of(header), List.of(results), filename);
     }
 
     public static void countingExperiment(List<Event> events, int numOfRows, int resolution) {

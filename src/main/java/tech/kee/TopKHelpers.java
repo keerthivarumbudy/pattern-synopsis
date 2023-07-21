@@ -97,12 +97,9 @@ public class TopKHelpers {
         ImmutableMap<Integer, ImmutableList<Sketch>> layerSketches = transformParameterForTopK(numberOfEvents, windows, streamSummary, k);
         // create combinations and patterns for all events
         //time generateAllPatterns
-//        long startTime = System.nanoTime();
         Set<List<Integer>> patterns = generateSequentialPatterns(streamSummary.eventTotalCountMap, numberOfEvents);
-//        long endTime = System.nanoTime();
-//        System.out.println("Time to generate "+ patterns.size()+ " patterns: " + (endTime - startTime) / 1000000 + "ms");
         // get upperbound for those patterns
-        Map<List<Integer>, Integer> patternMap = new HashMap<>();
+        Map<List<Integer>, Integer> patternMap = new HashMap<>((int) patterns.size());
 //        startTime = System.nanoTime();
         PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = null;
         for (int i = layerSketches.size()-1; i > 0; i--) {
@@ -125,11 +122,7 @@ public class TopKHelpers {
             // get the kth best resolution count out of the top-k patterns
             int kthBestValue = topKPatterns.peek().getValue();
             // prune the patterns from patternMap that have count less than the best resolution count of kth pattern
-//            System.out.println("kthBestValue=" + kthBestValue);
-//            System.out.println("Before pruning : patternMap.size()=" + patternMap.size());
-
             patternMap.entrySet().removeIf(entry -> entry.getValue() <= kthBestValue);
-//            System.out.println("After pruning  : patternMap.size()=" + patternMap.size());
             // if patternMap is empty, then return the topKPatterns
             if (patternMap.size() == 0) {
                 return topKPatterns;
@@ -137,7 +130,6 @@ public class TopKHelpers {
             // else, continue with the next layer
             patterns = patternMap.keySet();
         }
-
         // get the best value for the remaining patterns with better resolution
         for (List<Integer> pattern : patterns) {
             int bestValue = countPattern(pattern, windows, layerSketches.get(0));
@@ -146,10 +138,57 @@ public class TopKHelpers {
         // get topK patterns
         PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromCount(patternMap, k);
         // return the topKPatterns
-//        endTime = System.nanoTime();
-//        System.out.println("Time to get topK after pattern generation: " + (endTime - startTime) / 1000000 + "ms");
         return pq;
     }
+
+    public static PriorityQueue<Map.Entry<List<Integer>, Integer>> topkTestingLowerbound(Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
+        // transform the parameters to be used for topK
+        ImmutableMap<Integer, ImmutableList<Sketch>> layerSketches = transformParameterForTopK(numberOfEvents, windows, streamSummary, k);
+        // create combinations and patterns for all events
+        //time generateAllPatterns
+        Set<List<Integer>> patterns = generateSequentialPatterns(streamSummary.eventTotalCountMap, numberOfEvents);
+        // get upperbound for those patterns
+        Map<List<Integer>, Integer> patternMap = new HashMap<>();
+//        startTime = System.nanoTime();
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = null;
+        for (int i = layerSketches.size()-1; i > 0; i--) {
+            for (List<Integer> pattern : patterns) {
+                int upperBound = countPattern(pattern, windows, layerSketches.get(i));
+                patternMap.put(pattern, upperBound);
+            }
+            // get topK patterns
+            PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromCount(patternMap, k);
+            // get the best resolution count for those patterns
+            topKPatterns = new PriorityQueue<>(k, (a, b) -> a.getValue() - b.getValue());
+            while (pq.size() > 0) {
+                List<Integer> pattern = pq.poll().getKey();
+                if (topKPatterns.contains(pattern))
+                    continue;
+                int bestValue = getLowerboundCount(pattern, windows, layerSketches.get(i));
+                topKPatterns.add(Map.entry(pattern, bestValue));
+            }
+            // get the kth best resolution count out of the top-k patterns
+            int kthBestValue = topKPatterns.peek().getValue();
+            // prune the patterns from patternMap that have count less than the best resolution count of kth pattern
+            patternMap.entrySet().removeIf(entry -> entry.getValue() <= kthBestValue);
+            // if patternMap is empty, then return the topKPatterns
+            if (patternMap.size() == 0) {
+                return topKPatterns;
+            }
+            // else, continue with the next layer
+            patterns = patternMap.keySet();
+        }
+        // get the best value for the remaining patterns with better resolution
+        for (List<Integer> pattern : patterns) {
+            int bestValue = countPattern(pattern, windows, layerSketches.get(0));
+            patternMap.put(pattern, bestValue);
+        }
+        // get topK patterns
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromCount(patternMap, k);
+        // return the topKPatterns
+        return pq;
+    }
+
     public static PriorityQueue<Map.Entry<List<Integer>, Integer>> getTopKPatterns(Map<List<Integer>, Integer> patternList, ImmutableMap<Integer, ImmutableList<Sketch>> temporaryStreamSummary, List<Integer> windows, int k, PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns){
         PriorityQueue<Map.Entry<List<Integer>, Integer>> pq = getTopKPatternsFromCount(patternList, k);
         // get the best resolution count for those patterns
@@ -169,116 +208,6 @@ public class TopKHelpers {
                     topKPatterns.add(Map.entry(pattern, bestValue));
                 }
             }
-        }
-        return topKPatterns;
-    }
-
-    public static PriorityQueue<Map.Entry<List<Integer>, Integer>> topKWithSequentialGeneration(Integer numEventsPerPattern, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
-        // transform the parameters to be used for topK
-        ImmutableMap<Integer, ImmutableList<Sketch>> layerSketches = transformParameterForTopK(numEventsPerPattern, windows, streamSummary, k);
-        List<Integer> sortedEventList = Utils.getSortedEventsFromSketch(streamSummary.eventTotalCountMap.keySet(),layerSketches.get(layerSketches.size()-1).get(0));
-
-        // creating the first partial combination
-        List<Integer> partialCombination;
-        List<Integer> combination;
-        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns = null;
-        int kthBestValue = -1;
-
-        // initialization of the combinations
-        List<Integer> partialComboIdx = new ArrayList<Integer>() {{
-            for (int i = 0; i < numEventsPerPattern - 1; i++) {
-                add(0);
-            }
-        }};
-        List<Integer> lastPossiblePartialComboIdx = new ArrayList<Integer>() {{
-            for (int i = 0; i < numEventsPerPattern - 1; i++) {
-                add(sortedEventList.size() - 1);
-            }
-        }};
-        // make a copy of the sorted event list because we will remove elements from sortedEventList as we start
-        // pruning, and we need the original sortedEventList as we create combinations using indices
-        // For example, we will create the next partial combination by moving from 0th to 1st element, but we may remove
-        // the 0th element from sortedEventList as we prune, so we need the original sortedEventList to create the next
-        // partial combination
-        List<Integer> sortedEventListCopy = new ArrayList<Integer>(sortedEventList);
-        Map<List<Integer>, Integer> patternMap = new HashMap<>();
-            // while we do not reach the end of possible combinations
-        // Issue with CM-Sketch is due to the fact that the sorted event list is made on the basis of eventTotalCountMap from the stream summary
-        // which has the correct count of the event, whereas the upperbound of the event is calculated using the sketch
-        // therefore, events with low count, which would either have been ignored, will get a higher count in the CM Sketch
-        // due to the overestimation/collisions in CM Sketch
-        while (partialComboIdx != null) {
-            Integer lastAddedEventIdx = -1;
-            Boolean pruned = false;
-            List<Integer> PartialComboIdxCopy = partialComboIdx;
-            partialCombination = new ArrayList<Integer>() {{
-                for (int i : PartialComboIdxCopy) {
-                    add(sortedEventListCopy.get(i));
-                }
-            }};
-            for (int i = 0; i < sortedEventList.size(); i++) {
-                lastAddedEventIdx = i;
-                int iCopy = i;
-                combination = new ArrayList<Integer>(partialCombination) {{
-                    add(sortedEventList.get(iCopy));
-                }};
-                Set<List<Integer>> patterns = new HashSet<>();
-                permutePatternsFromCombinations(combination, new ArrayList<>(), patterns);
-                for (List<Integer> pattern : patterns) {
-                    int upperBound = countPattern(pattern, windows, layerSketches.get(layerSketches.size() - 1));
-                    if (patternMap.size() > k) {
-                        if (upperBound <= kthBestValue) {
-                            pruned = true;
-                            break;
-                        }
-                        if (kthBestValue == -1) {
-                            // gets activated in the worst resolution layer only
-                            topKPatterns = getTopKPatterns(patternMap, layerSketches, windows, k, topKPatterns);
-                            kthBestValue = topKPatterns.peek().getValue();
-//                            System.out.println("First while loop kthBestValue=" + kthBestValue);
-                        }
-                    }
-
-                    patternMap.put(pattern, upperBound);
-                }
-                if (pruned)
-                    break;
-
-            }
-            if (pruned) {
-                int maxIdx = partialComboIdx.stream().max(Integer::compareTo).get();
-                int removeFromIdx = max(maxIdx, lastAddedEventIdx);
-                if(removeFromIdx < sortedEventList.size() - 1)
-                    sortedEventList.removeAll(sortedEventList.subList(removeFromIdx + 1, sortedEventList.size()));
-                lastPossiblePartialComboIdx = new ArrayList<Integer>() {{
-                    for (int i = 0; i < numEventsPerPattern - 1; i++) {
-                        add(sortedEventList.size() - 1);
-                    }
-                }};
-            }
-            // check if the combination made has all the same events. If yes, then remove that event from sortedEventList
-            if (partialCombination.stream().distinct().count() == 1) {
-                sortedEventList.remove(partialCombination.get(0));
-            }
-            // get the next partial combination
-            partialComboIdx = getNextPartialCombination(partialComboIdx, lastPossiblePartialComboIdx, sortedEventList);
-
-        }
-
-        for(int l = layerSketches.size()-2; l>=0; l--){
-            Set<List<Integer>> patterns = new HashSet<>(patternMap.keySet());
-            for(List<Integer> pattern: patterns){
-                int upperBound = countPattern(pattern, windows, layerSketches.get(l));
-                if (upperBound <= kthBestValue) {
-                    patternMap.remove(pattern);
-                }else{
-                    patternMap.put(pattern, upperBound);
-                }
-            }
-            // re-adjust topKPatterns
-            topKPatterns = getTopKPatterns(patternMap, layerSketches, windows, k, topKPatterns);
-            kthBestValue = topKPatterns.peek().getValue();
-//            System.out.println("Outside the while loop, at layer "+l+" kthBestValue=" + kthBestValue);
         }
         return topKPatterns;
     }

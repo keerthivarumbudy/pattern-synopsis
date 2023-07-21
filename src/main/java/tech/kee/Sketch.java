@@ -19,7 +19,7 @@ public class Sketch {
     public Sketch(Integer startOrder, Integer endOrder) {
         this.startOrder = startOrder;
         this.endOrder = endOrder;
-//        this.eventCountMap = new CountMinSketch(20,4); // error = 0.1 and probability = 1 - 0.1
+//        this.eventCountMap = new CountMinSketch(200,4); // error = 0.01 and probability = 1 - 0.1
         this.eventCountMap = new EventMapping();
     }
 

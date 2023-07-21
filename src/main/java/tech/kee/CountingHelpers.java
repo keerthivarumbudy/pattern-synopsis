@@ -55,4 +55,20 @@ public class CountingHelpers {
         return count;
     }
 
+    public static int getLowerboundCount(List<Integer> eventIds, List<Integer> numBlocks, List<Sketch> baseLayer){
+        int count = 0;
+        for(int i=0; i<baseLayer.size(); i++) {
+            int count1 = baseLayer.get(i).eventCountMap.estimateCount(eventIds.get(0));
+            if(count1 <= 0)
+                continue;
+            for (int j = i+1; j < min(i + numBlocks.get(0), baseLayer.size()); j++) {
+                int count2 = baseLayer.get(j).eventCountMap.estimateCount(eventIds.get(1));
+                if(eventIds.get(0).equals(eventIds.get(1)) && i==j && count2>0)
+                    count2 -= 1;
+                count += count1 * count2;
+            }
+        }
+        return count;
+    }
+
 }

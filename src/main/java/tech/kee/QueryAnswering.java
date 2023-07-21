@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.*;
 
+import static java.lang.Math.min;
 import static tech.kee.TopKHelpers.*;
 import static tech.kee.Utils.*;
 import static tech.kee.CountingHelpers.*;
@@ -24,21 +25,6 @@ public class QueryAnswering {
         return countPattern(eventIds, windows, streamSummary.baseSummaryLayer);
     }
 
-    public static Map<List<Integer>, Integer> answerTopK(
-            Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
-        windows = windows.stream()
-                .map(window -> window / streamSummary.resolutionEvents)
-                .toList();
-
-        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns =
-                topKWithSequentialGeneration(numberOfEvents, windows, streamSummary, k);
-        Map<List<Integer>, Integer> topKPatternsMap = new HashMap<>();
-        for (Map.Entry<List<Integer>, Integer> entry : topKPatterns)
-            topKPatternsMap.put(entry.getKey(), entry.getValue());
-        // sort the map by value
-        topKPatternsMap = sortByValue(topKPatternsMap);
-        return topKPatternsMap;
-    }
     public static Map<List<Integer>, Integer> answerTopKNew(
             Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
         windows = windows.stream()
@@ -84,6 +70,23 @@ public class QueryAnswering {
         return topKPatternsMap;
     }
 
+    public static Map<List<Integer>, Integer> answerLowerboundTopkTest(
+            Integer numberOfEvents, List<Integer> windows, StreamSummary streamSummary, int k) throws IOException {
+        windows = windows.stream()
+                .map(window -> window / streamSummary.resolutionEvents)
+                .toList();
+
+        PriorityQueue<Map.Entry<List<Integer>, Integer>> topKPatterns =
+                topkTestingLowerbound(numberOfEvents, windows, streamSummary, k);
+        Map<List<Integer>, Integer> topKPatternsMap = new HashMap<>();
+        for (Map.Entry<List<Integer>, Integer> entry : topKPatterns)
+            topKPatternsMap.put(entry.getKey(), entry.getValue());
+        // sort the map by value
+        topKPatternsMap = sortByValue(topKPatternsMap);
+        return topKPatternsMap;
+    }
+
+
     public static int countEvent(Integer eventId, StreamSummary streamSummary) {
         int count = 0;
         for (int i = 0; i < streamSummary.baseSummaryLayer.size(); i++) {
@@ -104,5 +107,7 @@ public class QueryAnswering {
         }
 
     }
+
+
 
 }

@@ -119,13 +119,16 @@ public class MakePatterns {
                 getNeighbourCombinationIndices(combinationIndices, sortedEventList.size());
         Map<Integer, Integer> childCombinationIndices =
                 getChildCombinationIndices(combinationIndices, sortedEventList.size());
-        if (neighbourCombinationIndices.equals(lastPossibleCombinationIndices) || combinationsHistory.contains(neighbourCombinationIndices)) {
+        if(neighbourCombinationIndices!=null){
+            if (neighbourCombinationIndices.equals(lastPossibleCombinationIndices) || combinationsHistory.contains(neighbourCombinationIndices)) {
             // if we reached the end of the combinations
             neighbourCombinationIndices = null;
-        }
-        if (childCombinationIndices.equals(lastPossibleCombinationIndices) || combinationsHistory.contains(childCombinationIndices)) {
-            // if we reached the end of the combinations
-            childCombinationIndices = null;
+        }}
+        if(childCombinationIndices!=null){
+            if (childCombinationIndices.equals(lastPossibleCombinationIndices) || combinationsHistory.contains(childCombinationIndices)) {
+                // if we reached the end of the combinations
+                childCombinationIndices = null;
+            }
         }
         int neighbourCount = 0;
         int childCount = 0;
